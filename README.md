@@ -19,7 +19,7 @@ Desenvolvida para auxiliar pesquisadores e estudantes a rodarem análises comple
 
 Você pode utilizar a ferramenta diretamente do seu navegador, sem precisar instalar nada, acessando o link abaixo:
 
-👉 **[Link para a página no GitHub Pages]** *(Substitua aqui pelo link do seu GitHub Pages, ex: https://seu-usuario.github.io/seu-repositorio/)*
+👉 **https://vibaggio.github.io/mrbeasy/**
 
 Alternativamente, você pode fazer o download do arquivo `index.html` (ou `Interface_MrBayes.html`) deste repositório e dar um duplo clique para rodá-lo offline no seu computador.
 
