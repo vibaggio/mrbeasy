@@ -1,402 +1,1572 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Facilitador MrBayes 3.2.7a</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 850px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); position: relative; }
-        
-        .logo-container { background-color: #ffffff; text-align: center; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee; }
-        .logo-container img { max-height: 120px; max-width: 100%; }
-        .header-container { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #3498db; padding-bottom: 10px; margin-bottom: 25px; }
-        h1 { color: #2c3e50; margin: 0; font-size: 24px; }
-        
-        .btn-help { background-color: #f39c12; color: white; border: none; padding: 10px 15px; font-size: 14px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: background-color 0.3s; }
-        .btn-help:hover { background-color: #e67e22; }
-        .installer-section { background-color: #e8f4f8; border-left: 4px solid #3498db; padding: 15px; margin-bottom: 30px; border-radius: 0 4px 4px 0; }
-        .installer-section h3 { margin-top: 0; color: #2980b9; }
-        label { font-weight: bold; display: block; margin-top: 20px; margin-bottom: 5px; }
-        textarea, input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: monospace; }
-        textarea { resize: vertical; }
-        .drop-zone { border: 2px dashed #3498db; border-radius: 8px; padding: 30px; text-align: center; background-color: #f9fbfc; color: #7f8c8d; cursor: pointer; transition: background-color 0.3s; margin-bottom: 10px; }
-        .drop-zone:hover, .drop-zone.dragover { background-color: #eaf2f8; border-color: #2980b9; color: #2c3e50; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
-        .grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
-        .grid-6 input { text-align: center; }
-        .note { font-size: 0.85em; color: #7f8c8d; margin-top: 5px; font-weight: normal; }
-        button.btn-generate { background-color: #3498db; color: white; border: none; padding: 15px 20px; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: background-color 0.3s; width: 100%; margin-top: 30px; }
-        button.btn-generate:hover { background-color: #2980b9; }
-        .btn-installer { background-color: #27ae60; color: white; border: none; border-radius: 4px; padding: 10px 15px; font-size: 14px; font-weight: bold; cursor: pointer; transition: background-color 0.3s; }
-        .btn-installer:hover { background-color: #219653; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerador de Análises MrBayes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #F1F3EC;
+    --paper-alt: #E7EAE0;
+    --paper-deep: #DDE2D3;
+    --ink: #1E2B23;
+    --ink-soft: #4B5B4F;
+    --moss: #3F7D5C;
+    --moss-dark: #2C5A41;
+    --amber: #C97A3D;
+    --amber-dark: #A85F29;
+    --rule: #C3CBB6;
+    --code-bg: #16211B;
+    --code-fg: #D9E7D9;
+    --code-accent: #7FD9B6;
+    --danger: #B4432F;
+    --danger-bg: #F6E4DE;
+    --ok-bg: #E3ECE0;
+    --shadow: 0 1px 2px rgba(30,43,35,0.06), 0 4px 16px rgba(30,43,35,0.06);
+    --radius: 10px;
+  }
 
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); }
-        .modal-content { background-color: #fff; margin: 5vh auto; padding: 30px; border: 1px solid #888; width: 90%; max-width: 800px; border-radius: 8px; max-height: 85vh; overflow-y: auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
-        .close:hover, .close:focus { color: #333; text-decoration: none; }
-        .modal-content h2 { color: #2c3e50; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; }
-        .modal-content h3 { color: #3498db; margin-top: 25px; }
-        .modal-content ul { padding-left: 20px; }
-        .modal-content li { margin-bottom: 10px; }
+  * { box-sizing: border-box; }
 
-        .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 2px solid #ecf0f1; font-size: 0.9em; color: #7f8c8d; line-height: 1.6; }
-        .footer a { color: #3498db; text-decoration: none; font-weight: bold; }
-        .footer a:hover { text-decoration: underline; }
-    </style>
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  a{ color:var(--moss-dark); }
+
+  ::selection{ background:var(--code-accent); color:var(--ink); }
+
+  .wrap{
+    max-width:920px;
+    margin:0 auto;
+    padding:0 24px 120px;
+  }
+
+  /* ---------- HERO ---------- */
+  header.hero{
+    padding:56px 24px 40px;
+    border-bottom:1px solid var(--rule);
+    background:
+      radial-gradient(circle at 85% -10%, rgba(63,125,92,0.10), transparent 55%),
+      var(--paper);
+  }
+  .hero-inner{ max-width:920px; margin:0 auto; }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--moss-dark);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:18px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:7px; height:7px;
+    background:var(--amber);
+    border-radius:50%;
+    display:inline-block;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-optical-sizing:auto;
+    font-weight:600;
+    font-size:clamp(32px, 5vw, 46px);
+    line-height:1.08;
+    letter-spacing:-0.01em;
+    margin:0 0 16px;
+  }
+  h1 em{ font-style:italic; color:var(--moss-dark); }
+  .hero p.lead{
+    font-size:17px;
+    color:var(--ink-soft);
+    max-width:620px;
+    margin:0 0 22px;
+  }
+  .hero-meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px 22px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    color:var(--ink-soft);
+  }
+  .hero-meta span{ display:flex; align-items:center; gap:7px; }
+  .hero-meta span::before{ content:"›"; color:var(--amber); font-weight:700; }
+
+  /* ---------- STEP LAYOUT ---------- */
+  section.step{
+    padding:44px 0;
+    border-bottom:1px solid var(--rule);
+  }
+  section.step:last-of-type{ border-bottom:none; }
+
+  .step-head{
+    display:flex;
+    align-items:baseline;
+    gap:16px;
+    margin-bottom:6px;
+  }
+  .step-num{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    color:var(--paper);
+    background:var(--ink);
+    width:30px; height:30px;
+    min-width:30px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:600;
+  }
+  .step.done .step-num{ background:var(--moss); }
+  h2{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:24px;
+    margin:0;
+  }
+  .step-desc{
+    color:var(--ink-soft);
+    font-size:14.5px;
+    margin:2px 0 22px 46px;
+    max-width:620px;
+  }
+  .step-body{ margin-left:46px; }
+
+  /* ---------- DROPZONE ---------- */
+  .dropzone{
+    border:1.5px dashed var(--rule);
+    border-radius:var(--radius);
+    background:var(--paper-alt);
+    padding:34px 24px;
+    text-align:center;
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .dropzone:hover, .dropzone.drag{
+    border-color:var(--moss);
+    background:var(--ok-bg);
+  }
+  .dropzone svg{ width:30px; height:30px; color:var(--moss-dark); margin-bottom:10px; }
+  .dropzone .dz-title{ font-weight:600; margin-bottom:4px; }
+  .dropzone .dz-sub{ font-size:13px; color:var(--ink-soft); }
+  .dropzone input{ display:none; }
+
+  .or-paste{
+    text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+    margin:16px 0;
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .or-paste::before, .or-paste::after{
+    content:""; flex:1; height:1px; background:var(--rule);
+  }
+  textarea#pasteArea{
+    width:100%;
+    min-height:110px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    padding:14px;
+    border:1px solid var(--rule);
+    border-radius:var(--radius);
+    background:#fff;
+    color:var(--ink);
+    resize:vertical;
+  }
+  textarea#pasteArea:focus, input:focus, select:focus, .dropzone:focus-visible{
+    outline:2px solid var(--moss);
+    outline-offset:2px;
+  }
+  .btn-small{
+    margin-top:10px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    background:var(--ink);
+    color:var(--paper);
+    border:none;
+    padding:9px 16px;
+    border-radius:7px;
+    cursor:pointer;
+  }
+  .btn-small:hover{ background:var(--moss-dark); }
+
+  /* ---------- REPORT ---------- */
+  .report{
+    display:none;
+    margin-top:22px;
+    border:1px solid var(--rule);
+    border-radius:var(--radius);
+    background:#fff;
+    overflow:hidden;
+  }
+  .report.show{ display:block; }
+  .report-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:14px 18px;
+    background:var(--ok-bg);
+    border-bottom:1px solid var(--rule);
+  }
+  .report-head.has-warn{ background:#F3ECD9; }
+  .report-head strong{ font-size:14px; }
+  .file-chip{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+  }
+  .stat-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:0;
+    border-bottom:1px solid var(--rule);
+  }
+  .stat{
+    flex:1;
+    min-width:110px;
+    padding:14px 18px;
+    border-right:1px solid var(--rule);
+  }
+  .stat:last-child{ border-right:none; }
+  .stat .label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--ink-soft);
+    margin-bottom:4px;
+  }
+  .stat .value{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:19px;
+    font-weight:600;
+    color:var(--moss-dark);
+  }
+  .warn-list{ padding:14px 18px; }
+  .warn-list p.none{ color:var(--ink-soft); font-size:13.5px; margin:0; }
+  .warn-item{
+    display:flex;
+    gap:10px;
+    font-size:13.5px;
+    padding:6px 0;
+    color:var(--ink);
+    align-items:flex-start;
+  }
+  .warn-item .dot{ color:var(--amber-dark); font-weight:700; margin-top:1px; }
+
+  /* ---------- FORM ---------- */
+  .field-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+  }
+  @media (max-width:640px){ .field-grid{ grid-template-columns:1fr; } .step-desc, .step-body{ margin-left:0; } .step-head{ align-items:center; } }
+
+  .field{ display:flex; flex-direction:column; gap:6px; }
+  .field.full{ grid-column:1 / -1; }
+  .field label{ font-size:13px; font-weight:600; }
+  .field .hint{ font-size:12px; color:var(--ink-soft); margin-top:-2px; }
+  select, input[type=text], input[type=number]{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13.5px;
+    padding:9px 11px;
+    border:1px solid var(--rule);
+    border-radius:7px;
+    background:#fff;
+    color:var(--ink);
+  }
+  select[multiple]{ min-height:110px; }
+
+  fieldset{
+    border:1px solid var(--rule);
+    border-radius:var(--radius);
+    padding:16px 18px 18px;
+    margin:0 0 18px;
+  }
+  fieldset legend{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--moss-dark);
+    padding:0 6px;
+  }
+
+  .toggle-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    padding:10px 0;
+    border-bottom:1px solid var(--paper-deep);
+  }
+  .toggle-row:last-child{ border-bottom:none; }
+  .toggle-row .t-label{ font-size:13.5px; font-weight:600; }
+  .toggle-row .t-hint{ font-size:12px; color:var(--ink-soft); font-weight:400; }
+
+  .switch{ position:relative; width:42px; height:24px; flex:none; }
+  .switch input{ opacity:0; width:0; height:0; }
+  .slider{
+    position:absolute; inset:0; cursor:pointer;
+    background:var(--rule); border-radius:999px; transition:.15s;
+  }
+  .slider::before{
+    content:""; position:absolute; width:18px; height:18px; left:3px; top:3px;
+    background:#fff; border-radius:50%; transition:.15s; box-shadow:0 1px 2px rgba(0,0,0,.25);
+  }
+  .switch input:checked + .slider{ background:var(--moss); }
+  .switch input:checked + .slider::before{ transform:translateX(18px); }
+
+  .rate-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:14px;
+  }
+  @media (max-width:640px){ .rate-grid{ grid-template-columns:repeat(2, 1fr); } }
+
+  .pill-group{ display:flex; flex-wrap:wrap; gap:10px; }
+  .pill{
+    border:1px solid var(--rule);
+    border-radius:10px;
+    padding:12px 14px;
+    cursor:pointer;
+    flex:1;
+    min-width:200px;
+    background:#fff;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .pill input{ display:none; }
+  .pill .p-title{ font-weight:600; font-size:13.5px; display:flex; align-items:center; gap:8px; }
+  .pill .p-title::before{
+    content:""; width:14px; height:14px; border-radius:50%;
+    border:1.5px solid var(--rule); display:inline-block; flex:none;
+  }
+  .pill.active{ border-color:var(--moss); background:var(--ok-bg); }
+  .pill.active .p-title::before{ border-color:var(--moss); background:radial-gradient(circle, var(--moss) 0 45%, transparent 50%); }
+  .pill .p-sub{ font-size:12px; color:var(--ink-soft); margin-top:3px; margin-left:22px; }
+
+  .platform-extra{
+    margin-top:16px;
+    padding:16px 18px;
+    background:var(--paper-alt);
+    border:1px solid var(--rule);
+    border-radius:var(--radius);
+  }
+
+  /* partitions */
+  #partitionRows{ display:flex; flex-direction:column; gap:10px; margin-bottom:10px; }
+  .part-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:center;
+  }
+  .part-row input, .part-row select{ flex:1 1 110px; min-width:90px; }
+  .part-row .p-name{ flex:1 1 140px; }
+  .icon-btn{
+    background:none; border:1px solid var(--rule); border-radius:7px;
+    width:34px; height:34px; cursor:pointer; color:var(--danger);
+    font-size:16px; line-height:1;
+  }
+  .icon-btn:hover{ background:var(--danger-bg); }
+  .add-row-btn{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    background:none;
+    border:1px dashed var(--rule);
+    color:var(--moss-dark);
+    padding:8px 14px;
+    border-radius:7px;
+    cursor:pointer;
+  }
+  .add-row-btn:hover{ border-color:var(--moss); background:var(--ok-bg); }
+
+  /* ---------- PREVIEW / SPECIMEN LABEL ---------- */
+  .label-card{
+    border:1px solid var(--ink);
+    border-radius:var(--radius);
+    background:var(--code-bg);
+    position:relative;
+    overflow:hidden;
+  }
+  .label-tab{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 16px;
+    background:#0F1913;
+    border-bottom:1px dashed rgba(217,231,217,0.25);
+  }
+  .label-tab .tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--code-accent);
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+  }
+  .stamp{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:0.08em;
+    color:var(--amber);
+    border:1px solid var(--amber);
+    border-radius:5px;
+    padding:3px 8px;
+    transform:rotate(2deg);
+  }
+  pre#previewCode{
+    margin:0;
+    padding:18px 20px 20px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    line-height:1.65;
+    color:var(--code-fg);
+    max-height:360px;
+    overflow:auto;
+    white-space:pre;
+  }
+  pre#previewCode .cm{ color:#6E8E7A; }
+  pre#previewCode .kw{ color:var(--code-accent); }
+  pre#previewCode .amber{ color:#E3A469; }
+
+  .download-bar{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:14px;
+    margin-top:18px;
+  }
+  .field-filename{ flex:1; min-width:220px; }
+  .btn-primary{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:14px;
+    font-weight:600;
+    background:var(--moss);
+    color:#fff;
+    border:none;
+    padding:13px 22px;
+    border-radius:8px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:9px;
+    box-shadow:var(--shadow);
+  }
+  .btn-primary:hover{ background:var(--moss-dark); }
+  .btn-primary:disabled{ background:var(--rule); color:var(--ink-soft); cursor:not-allowed; box-shadow:none; }
+
+  .runbox{
+    margin-top:20px;
+    background:var(--paper-alt);
+    border:1px solid var(--rule);
+    border-radius:var(--radius);
+    padding:16px 18px;
+    font-size:13.5px;
+  }
+  .runbox strong{ display:block; margin-bottom:6px; }
+  .runbox code{
+    font-family:'IBM Plex Mono', monospace;
+    background:var(--code-bg);
+    color:var(--code-accent);
+    padding:2px 7px;
+    border-radius:5px;
+    font-size:12.5px;
+  }
+
+  footer{
+    text-align:center;
+    padding:36px 24px 10px;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    font-family:'IBM Plex Mono', monospace;
+  }
+
+  .badge-empty{ color:var(--ink-soft); font-style:italic; }
+</style>
 </head>
 <body>
 
-<div class="container">
-    <div class="logo-container">
-        <img src="logonew.png" onerror="this.onerror=null; this.src='logonew.jpg';" alt="Laboratório de Protozoologia">
+<header class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Ferramenta local · roda no navegador · nada é enviado a servidores</div>
+    <h1>Monte sua análise no <em>MrBayes</em> sem escrever uma linha de comando.</h1>
+    <p class="lead">Carregue o arquivo <code>.nex</code> exportado do MEGA ou DnaSP6, ajuste o modelo e os parâmetros da MCMC num formulário simples, e baixe um arquivo já pronto para rodar — a página também limpa automaticamente os caracteres estranhos que esses programas costumam deixar no arquivo.</p>
+    <div class="hero-meta">
+      <span>Limpeza automática do NEXUS</span>
+      <span>Detecção de táxons e partições</span>
+      <span>Arquivo final pronto para <code>mb</code></span>
     </div>
+  </div>
+</header>
 
-    <div class="header-container">
-        <h1>Facilitador MrBayes 3.2.7a</h1>
-        <button class="btn-help" id="btnHelp">? Guia de Uso e Parâmetros</button>
-    </div>
+<div class="wrap">
 
-    <div class="installer-section">
-        <h3>Pré-requisitos da Máquina</h3>
-        <p class="note" style="color: #333;">Baixe e execute como administrador caso este PC ainda não tenha o MrBayes e o WSL(MPI) configurados.</p>
-        <button class="btn-installer" onclick="baixarInstalador()">Baixar Instalador de Dependências</button>
-    </div>
-    
-    <label>1. Envio do Alinhamento (FASTA ou NEXUS):</label>
-    <div class="drop-zone" id="drop-zone">
-        Arraste e solte o arquivo aqui, ou clique para selecionar.<br>
-        <span style="font-size: 0.9em; font-weight: bold;" id="file-name-display">Arquivos FASTA (>) serão convertidos automaticamente para NEXUS.</span>
-    </div>
-    <input type="file" id="file-input" style="display: none;" accept=".nex,.nexus,.txt,.fas,.fasta">
-    
-    <textarea id="nexusText" rows="6" placeholder="O código do arquivo aparecerá aqui (você também pode colar manualmente)..."></textarea>
+  <!-- STEP 1 -->
+  <section class="step" id="stepUpload">
+    <div class="step-head"><div class="step-num">01</div><h2>Carregue o arquivo NEXUS</h2></div>
+    <p class="step-desc">Arraste o arquivo exportado do MEGA ou DnaSP6, ou cole o conteúdo diretamente. A página vai limpar caracteres inválidos e mostrar um resumo do que encontrou.</p>
+    <div class="step-body">
+      <div class="dropzone" id="dropzone" tabindex="0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+        <div class="dz-title">Arraste o arquivo .nex / .nexus aqui</div>
+        <div class="dz-sub">ou clique para escolher do computador</div>
+        <input type="file" id="fileInput" accept=".nex,.nexus,.txt">
+      </div>
 
-    <div class="grid-2">
-        <div>
-            <label for="filename">2. Nome Base (sem espaços):</label>
-            <input type="text" id="filename" value="alinhamento">
+      <div class="or-paste">ou cole o texto do arquivo</div>
+      <textarea id="pasteArea" placeholder="#NEXUS
+begin data;
+...
+"></textarea>
+      <button class="btn-small" id="btnUsePaste">Usar este texto</button>
+
+      <div class="report" id="report">
+        <div class="report-head" id="reportHead">
+          <strong id="reportTitle">Arquivo processado</strong>
+          <span class="file-chip" id="fileChip"></span>
         </div>
+        <div class="stat-row">
+          <div class="stat"><div class="label">Táxons</div><div class="value" id="statTaxa">–</div></div>
+          <div class="stat"><div class="label">Sítios (nchar)</div><div class="value" id="statChar">–</div></div>
+          <div class="stat"><div class="label">Tipo de dado</div><div class="value" id="statType">–</div></div>
+          <div class="stat"><div class="label">Correções aplicadas</div><div class="value" id="statFix">–</div></div>
+        </div>
+        <div class="warn-list" id="warnList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="step" id="stepModel">
+    <div class="step-head"><div class="step-num">02</div><h2>Modelo evolutivo</h2></div>
+    <p class="step-desc">Escolha o tipo de dado e o modelo de substituição. Se seus dados têm mais de um gene/região, ative partições e defina um modelo para cada uma.</p>
+    <div class="step-body">
+
+      <div class="field" style="margin-bottom:18px;">
+        <label for="dataKind">Tipo de dado</label>
+        <select id="dataKind">
+          <option value="dna" selected>Nucleotídeo (DNA / RNA)</option>
+          <option value="protein">Proteína (aminoácidos)</option>
+          <option value="standard">Morfológico / discreto (standard)</option>
+        </select>
+        <div class="hint">Detectado automaticamente a partir do arquivo quando possível — ajuste se necessário.</div>
+      </div>
+
+      <div class="toggle-row">
         <div>
-            <label for="os">3. Ambiente de Execução:</label>
-            <select id="os">
-                <option value="win">Windows (mb.exe - Thread Única)</option>
-                <option value="mpi" selected>Ubuntu/WSL (mpirun - Múltiplas Threads via MPI)</option>
+          <div class="t-label">Meus dados têm mais de uma partição (ex: genes diferentes)</div>
+          <div class="t-hint">Cria blocos <code style="font-family:'IBM Plex Mono',monospace">charset</code> e <code style="font-family:'IBM Plex Mono',monospace">partition</code> com modelo independente por partição</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="usePartitions"><span class="slider"></span></label>
+      </div>
+
+      <div id="singleModelBlock" style="margin-top:18px;">
+        <div class="field-grid">
+          <div class="field" id="dnaModelField">
+            <label for="nstStructure">Estrutura das taxas de substituição</label>
+            <select id="nstStructure">
+              <option value="1">1 taxa — todas as substituições na mesma velocidade</option>
+              <option value="2" selected>2 taxas — transição ≠ transversão</option>
+              <option value="6">6 taxas — cada par de bases com taxa própria (GTR)</option>
+              <option value="mixed">Mixed — MrBayes testa automaticamente entre todas as estruturas (rjMCMC)</option>
             </select>
-        </div>
-    </div>
-
-    <div class="grid-3">
-        <div>
-            <label for="ngen">4. Gerações (ngen):</label>
-            <input type="number" id="ngen" value="1000000">
-        </div>
-        <div>
-            <label for="samplefreq">5. Amostragem:</label>
-            <input type="number" id="samplefreq" value="1000">
-        </div>
-        <div>
-            <label for="threads">6. Threads/Cadeias:</label>
-            <input type="number" id="threads" value="4" min="1" max="32">
-        </div>
-    </div>
-
-    <div class="grid-2">
-        <div>
-            <label for="nst">7. Modelo de Evolução (nst):</label>
-            <select id="nst">
-                <option value="mixed">Misto (Automático)</option>
-                <option value="6">GTR (nst=6)</option>
-                <option value="2">HKY / K80 (nst=2)</option>
-                <option value="1">JC / F81 (nst=1)</option>
+            <div class="hint" id="resolvedModelLabel" style="font-weight:600; color:var(--moss-dark);"></div>
+          </div>
+          <div class="field" id="proteinModelField" style="display:none;">
+            <label for="modelProtein">Matriz de substituição</label>
+            <select id="modelProtein">
+              <option value="poisson">Poisson — taxas iguais entre aminoácidos</option>
+              <option value="equalin">Equalin — taxas iguais, frequências empíricas</option>
+              <option value="jones" selected>Jones (JTT)</option>
+              <option value="dayhoff">Dayhoff</option>
+              <option value="wag">WAG</option>
+              <option value="mtrev">mtREV — mitocondrial</option>
+              <option value="rtrev">rtREV — retroviral</option>
+              <option value="cprev">cpREV — cloroplasto</option>
+              <option value="vt">VT</option>
+              <option value="blosum">Blosum</option>
+              <option value="mixed">Mixed — MrBayes escolhe entre as matrizes (rjMCMC)</option>
             </select>
-        </div>
-        <div>
-            <label for="rates">8. Variação de Taxas (rates):</label>
+          </div>
+          <div class="field" id="baseFreqField">
+            <label for="baseFreq">Frequência das bases</label>
+            <select id="baseFreq">
+              <option value="equal">Igual (0,25 para cada base)</option>
+              <option value="estimate" selected>Estimada (Dirichlet, Bayesiano)</option>
+              <option value="empirical">Empírica fixa (+F — calculada direto dos dados)</option>
+            </select>
+          </div>
+          <div class="field" id="ratesField">
+            <label for="rates">Variação de taxa entre sítios</label>
             <select id="rates">
-                <option value="invgamma">I + G (invgamma)</option>
-                <option value="gamma">G (gamma)</option>
-                <option value="propinv">I (propinv)</option>
-                <option value="equal">Sem variação (equal)</option>
+              <option value="equal">Nenhuma (equal)</option>
+              <option value="gamma" selected>Gamma (+G)</option>
+              <option value="propinv">Proporção de invariáveis (+I)</option>
+              <option value="invgamma">Gamma + invariáveis (+I+G)</option>
             </select>
+          </div>
+          <div class="field" id="ngammacatField">
+            <label for="ngammacat">Categorias da distribuição gamma (+G4, +G6...)</label>
+            <input type="number" id="ngammacat" value="4" min="2" max="16" step="1">
+            <div class="hint">Padrão do MrBayes é 4. Mais categorias aproximam melhor a distribuição contínua, ao custo de mais tempo de análise.</div>
+          </div>
+          <div class="field" id="codingField" style="display:none;">
+            <label for="coding">Codificação dos caracteres (standard)</label>
+            <select id="coding">
+              <option value="all">Todos os caracteres (all)</option>
+              <option value="variable" selected>Somente variáveis (variable)</option>
+              <option value="noabsencesites">Sem sítios de ausência total</option>
+              <option value="nopresencesites">Sem sítios de presença total</option>
+            </select>
+          </div>
         </div>
+
+        <p class="hint" id="namedModelsHint" style="margin-top:10px;">Nomes como <strong>TrN, TIM1-3, TPM1-3 e TVM</strong> são casos intermediários entre HKY e GTR (algumas das 6 taxas amarradas entre si) — o MrBayes não tem um atalho de nome para eles isoladamente; use <strong>Mixed</strong> acima, que testa automaticamente toda essa família (essas variações inclusive) e estima a probabilidade de cada uma. O modelo <strong>FreeRate (+R)</strong> de programas de máxima verossimilhança (IQ-TREE, RAxML) não existe no MrBayes — apenas Gamma (+G) e proporção de invariáveis (+I) estão disponíveis.</p>
+
+        <div class="toggle-row" id="fixedRatesToggleRow" style="display:none; margin-top:6px;">
+          <div>
+            <div class="t-label">Fixar manualmente as taxas de substituição</div>
+            <div class="t-hint">Em vez de estimar, usa os valores relativos que você informar abaixo (<code style="font-family:'IBM Plex Mono',monospace">prset revmatpr=fixed(...)</code>)</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="useFixedRates"><span class="slider"></span></label>
+        </div>
+
+        <fieldset id="fixedRatesBlock" style="display:none;">
+          <legend>Taxas relativas de substituição (par de bases)</legend>
+          <div class="rate-grid">
+            <div class="field"><label for="rateAC">A ↔ C</label><input type="number" id="rateAC" value="1" step="0.1" min="0"></div>
+            <div class="field"><label for="rateAG">A ↔ G</label><input type="number" id="rateAG" value="1" step="0.1" min="0"></div>
+            <div class="field"><label for="rateAT">A ↔ T</label><input type="number" id="rateAT" value="1" step="0.1" min="0"></div>
+            <div class="field"><label for="rateCG">C ↔ G</label><input type="number" id="rateCG" value="1" step="0.1" min="0"></div>
+            <div class="field"><label for="rateCT">C ↔ T</label><input type="number" id="rateCT" value="1" step="0.1" min="0"></div>
+            <div class="field"><label for="rateGT">G ↔ T</label><input type="number" id="rateGT" value="1" step="0.1" min="0"></div>
+          </div>
+          <p class="hint" style="margin-top:10px;">Valores relativos (não precisam somar 1) — ex: use os resultados de um modelo já estimado antes, ou taxas publicadas na literatura para o seu grupo. Só se aplica à estrutura de 6 taxas. Dica avançada: para aproximar manualmente um modelo como TIM (sem a incerteza do Bayesiano), repita o mesmo valor nos pares que esse modelo trata como iguais.</p>
+        </fieldset>
+      </div>
+
+      <div id="partitionsBlock" style="display:none; margin-top:18px;">
+        <fieldset>
+          <legend>Partições</legend>
+          <div id="partitionRows"></div>
+          <button class="add-row-btn" id="addPartition" type="button">+ adicionar partição</button>
+          <p class="hint" style="margin-top:10px;">Informe o intervalo de sítios de cada gene (ex: 1–520). Confira esses números no seu alinhamento — a página não adivinha onde um gene termina e outro começa. Taxas fixas não estão disponíveis por partição; a categoria gamma (+G) definida acima vale para todas.</p>
+        </fieldset>
+      </div>
+
     </div>
+  </section>
 
-    <label for="outgroup">9. Outgroup (Opcional):
-        <div class="note">Digite o nome exato da sequência que servirá de raiz (ex: AF113933.1Allothyr). Deixe em branco se não houver.</div>
-    </label>
-    <input type="text" id="outgroup" placeholder="Nome exato do taxon">
+  <!-- STEP 3 -->
+  <section class="step" id="stepMcmc">
+    <div class="step-head"><div class="step-num">03</div><h2>Parâmetros da MCMC</h2></div>
+    <p class="step-desc">Valores padrão razoáveis para um conjunto de dados de porte médio já estão preenchidos — ajuste se souber o que seu conjunto de dados exige.</p>
+    <div class="step-body">
+      <div class="field-grid">
+        <div class="field">
+          <label for="ngen">Gerações (ngen)</label>
+          <input type="number" id="ngen" value="2000000" step="100000" min="1000">
+        </div>
+        <div class="field">
+          <label for="samplefreq">Frequência de amostragem</label>
+          <input type="number" id="samplefreq" value="1000" min="1">
+        </div>
+        <div class="field">
+          <label for="nruns">Número de análises independentes (nruns)</label>
+          <input type="number" id="nruns" value="2" min="1" max="9">
+        </div>
+        <div class="field">
+          <label for="nchains">Cadeias por análise (nchains)</label>
+          <input type="number" id="nchains" value="4" min="1" max="12">
+        </div>
+        <div class="field">
+          <label for="burninfrac">Fração de burn-in</label>
+          <input type="number" id="burninfrac" value="0.25" step="0.05" min="0" max="0.9">
+        </div>
+        <div class="field">
+          <label for="temp">Temperatura (temp)</label>
+          <input type="number" id="temp" value="0.2" step="0.05" min="0.01" max="1">
+        </div>
+      </div>
 
-    <label>10. Fixar Taxas Relativas (Opcional - força GTR):</label>
-    <div class="grid-6">
-        <div><span class="note">A-C</span><input type="text" id="r-ac"></div>
-        <div><span class="note">A-G</span><input type="text" id="r-ag"></div>
-        <div><span class="note">A-T</span><input type="text" id="r-at"></div>
-        <div><span class="note">C-G</span><input type="text" id="r-cg"></div>
-        <div><span class="note">C-T</span><input type="text" id="r-ct"></div>
-        <div><span class="note">G-T</span><input type="text" id="r-gt"></div>
+      <div class="toggle-row" style="margin-top:8px;">
+        <div>
+          <div class="t-label">Parar automaticamente ao convergir</div>
+          <div class="t-hint">Adiciona <code style="font-family:'IBM Plex Mono',monospace">stoprule=yes stopval=0.01</code> (ASDSF abaixo de 0,01)</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="useStoprule" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div>
+          <div class="t-label">Rodar sem pausas nem perguntas no terminal</div>
+          <div class="t-hint">Recomendado — adiciona <code style="font-family:'IBM Plex Mono',monospace">set autoclose=yes nowarn=yes</code></div>
+        </div>
+        <label class="switch"><input type="checkbox" id="useAutoclose" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div>
+          <div class="t-label">Salvar um arquivo .log da análise</div>
+          <div class="t-hint">Registra tudo que aparece no terminal durante a corrida</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="useLog" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div>
+          <div class="t-label">Resumir árvore e parâmetros ao final (sump / sumt)</div>
+          <div class="t-hint">Roda automaticamente após a MCMC terminar, usando o mesmo burn-in</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="useSumm" checked><span class="slider"></span></label>
+      </div>
     </div>
+  </section>
 
-    <button class="btn-generate" onclick="gerarArquivos()">Limpar, Processar e Gerar Arquivos</button>
-
-    <div class="footer">
-        <p>Produzido por <strong>Vinícius Baggio de Souza</strong> | <a href="http://lattes.cnpq.br/3742051223020733" target="_blank">Currículo Lattes</a></p>
-        <p>Laboratório de Protozoologia (FAVET-UFRGS) | <a href="https://instagram.com/protozoovet" target="_blank">@protozoovet</a></p>
-        <p>Sugestões ou problemas: <a href="mailto:vinicius.baggio@ufrgs.br">vinicius.baggio@ufrgs.br</a></p>
+  <!-- STEP 4 -->
+  <section class="step" id="stepOutgroup">
+    <div class="step-head"><div class="step-num">04</div><h2>Grupo externo</h2></div>
+    <p class="step-desc">Selecione um ou mais táxons que servirão de grupo externo (outgroup) para enraizar a árvore.</p>
+    <div class="step-body">
+      <div class="field full">
+        <label for="outgroupSelect">Táxons detectados</label>
+        <select id="outgroupSelect" multiple></select>
+        <div class="hint">Nenhum arquivo carregado ainda — a lista aparece depois do passo 1. Segure Ctrl/Cmd para selecionar mais de um.</div>
+      </div>
     </div>
+  </section>
+
+  <!-- STEP 5 -->
+  <section class="step" id="stepPlatform">
+    <div class="step-head"><div class="step-num">05</div><h2>Onde a análise vai rodar?</h2></div>
+    <p class="step-desc">O comando para iniciar a análise muda conforme a plataforma — escolha onde seus colegas vão rodar o arquivo. O bloco de comandos do NEXUS é o mesmo; o que muda é a instrução de execução (e o uso de MPI).</p>
+    <div class="step-body">
+      <div class="pill-group" id="platformGroup">
+        <label class="pill" data-value="win">
+          <input type="radio" name="platform" value="win" checked>
+          <div class="p-title">Windows nativo</div>
+          <div class="p-sub">MrBayes instalado direto no Windows, sem MPI</div>
+        </label>
+        <label class="pill" data-value="unix">
+          <input type="radio" name="platform" value="unix">
+          <div class="p-title">Linux / macOS nativo</div>
+          <div class="p-sub">Uma única cadeia de execução, sem MPI</div>
+        </label>
+        <label class="pill" data-value="mpi">
+          <input type="radio" name="platform" value="mpi">
+          <div class="p-title">WSL (Ubuntu) com MPI</div>
+          <div class="p-sub">mrbayes-mpi rodando as cadeias em paralelo</div>
+        </label>
+      </div>
+
+      <div class="platform-extra" id="platformExtraWin">
+        <div class="field">
+          <label for="execWin">Nome/caminho do executável</label>
+          <input type="text" id="execWin" value="mb.exe">
+        </div>
+        <p class="hint" style="margin-top:8px;">Se o MrBayes não estiver no PATH do Windows, use o caminho completo entre aspas, ex: <code style="font-family:'IBM Plex Mono',monospace">"C:\Program Files\MrBayes\mb.exe"</code>.</p>
+      </div>
+
+      <div class="platform-extra" id="platformExtraUnix" style="display:none;">
+        <div class="field">
+          <label for="execUnix">Nome/caminho do executável</label>
+          <input type="text" id="execUnix" value="mb">
+        </div>
+      </div>
+
+      <div class="platform-extra" id="platformExtraMpi" style="display:none;">
+        <div class="field-grid">
+          <div class="field">
+            <label for="execMpi">Nome do executável MrBayes (MPI)</label>
+            <input type="text" id="execMpi" value="mb">
+          </div>
+          <div class="field">
+            <label for="mpirunCmd">Comando mpirun</label>
+            <input type="text" id="mpirunCmd" value="mpirun">
+          </div>
+          <div class="field">
+            <label for="npCount">Número de processos (-np)</label>
+            <input type="number" id="npCount" value="8" min="1">
+            <div class="hint">Sugerido = nruns × nchains (ajustado automaticamente ao mudar o passo 03). Não ultrapasse o nº de núcleos disponíveis no WSL.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 6 -->
+  <section class="step" id="stepPreview">
+    <div class="step-head"><div class="step-num">06</div><h2>Gerar e baixar</h2></div>
+    <p class="step-desc">Este é o bloco de comandos que será acrescentado ao final do seu arquivo NEXUS já limpo. O arquivo final baixado contém a matriz + este bloco, pronto para rodar.</p>
+    <div class="step-body">
+      <div class="label-card">
+        <div class="label-tab">
+          <span class="tag">bloco mrbayes gerado</span>
+          <span class="stamp">pronto para execução</span>
+        </div>
+        <pre id="previewCode"><span class="badge-empty">Carregue um arquivo no passo 1 para ver o bloco de comandos aqui.</span></pre>
+      </div>
+
+      <div class="download-bar">
+        <div class="field field-filename">
+          <label for="outFilename">Nome do arquivo final</label>
+          <input type="text" id="outFilename" placeholder="minha_analise_mrbayes.nex">
+        </div>
+        <button class="btn-primary" id="btnDownload" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+          Baixar arquivo pronto
+        </button>
+        <button class="btn-primary" id="btnDownloadScript" disabled style="background:var(--amber-dark);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9l-6-6z"/><path d="M14 3v6h6"/></svg>
+          <span id="btnScriptLabel">Baixar script (.bat)</span>
+        </button>
+      </div>
+
+      <div class="runbox" id="runbox">
+        <strong id="runboxTitle">Como iniciar a análise com o arquivo baixado</strong>
+        <span id="runboxText"></span>
+      </div>
+    </div>
+  </section>
+
 </div>
 
-<!-- Modal de Ajuda -->
-<div id="helpModal" class="modal">
-    <div class="modal-content">
-        <span class="close" id="closeHelp">&times;</span>
-        <h2>Guia de Uso e Explicação dos Parâmetros</h2>
-        
-        <h3>Passo a Passo Rápido</h3>
-        <ol>
-            <li><strong>Instalação Inicial:</strong> Se for a primeira vez no PC, clique no botão verde para baixar e rodar o instalador de dependências.</li>
-            <li><strong>Upload (Dica: Prefira FASTA!):</strong> O recomendável é arrastar arquivos `.fasta` limpos. O conversor inteligente criará o NEXUS perfeitamente otimizado. Arquivos já em `.nexus` serão aceitos e limpos também.</li>
-            <li><strong>Configuração:</strong> Preencha as gerações e ajuste os modelos (ou deixe no automático/mixed).</li>
-            <li><strong>Gerar e Rodar:</strong> Clique no botão azul final. Dois arquivos serão baixados. Coloque-os na mesma pasta e dê duplo clique no arquivo <code>.bat</code> para iniciar a análise.</li>
-        </ol>
-
-        <h3>Explicação das Configurações</h3>
-        <ul>
-            <li><strong>Ambiente de Execução:</strong> 
-                <br><em>Windows:</em> Roda em thread única (processamento serial). Útil para matrizes muito curtas.
-                <br><em>Ubuntu/WSL (MPI):</em> Divide o processamento entre vários núcleos do computador. Obrigatório para grandes matrizes (reduz o tempo drasticamente).</li>
-            <li><strong>Gerações (ngen):</strong> O número de ciclos da simulação (MCMC). Se ao fim o "Average Standard Deviation" for &gt; 0.05, você precisará gerar uma nova análise aumentando este valor (ex: de 1.000.000 para 5.000.000).</li>
-            <li><strong>Amostragem (samplefreq):</strong> De quantas em quantas gerações uma árvore é salva no arquivo. Padrão: 1000. Evita que os arquivos de saída fiquem gigantescos.</li>
-            <li><strong>Threads/Cadeias:</strong> Quantidade de caminhos paralelos na simulação MCMC (nchains). O padrão do MrBayes é 4. Deve obrigatoriamente ser igual ao número de Threads que você destinará no ambiente MPI.</li>
-            <li><strong>Modelo de Evolução (nst):</strong> Dita como ocorrem as substituições de nucleotídeos.
-                <br>- <em>Misto:</em> O MrBayes pula entre modelos e escolhe o melhor sozinho.
-                <br>- <em>GTR (6):</em> Taxas independentes para cada transição/transversão.
-                <br>- <em>HKY (2):</em> Uma taxa para transições, outra para transversões.</li>
-            <li><strong>Variação de Taxas (rates):</strong> Como as mutações variam ao longo dos sítios (colunas) do alinhamento.
-                <br>- <em>invgamma (I+G):</em> Sítios invariáveis + variação Gamma (mais comum e flexível).
-                <br>- <em>gamma (G):</em> Variação segue uma distribuição Gamma.</li>
-            <li><strong>Outgroup:</strong> Define fisicamente onde fica a raiz da sua árvore filogenética. Insira o nome exato (letras e números) de uma espécie distante incluída no seu alinhamento.</li>
-            <li><strong>Fixar Taxas Relativas:</strong> Se você rodou sua matriz antes no IQ-Tree ou jModelTest e ele indicou o modelo GTR com taxas numéricas específicas (A-C, A-G, etc.), digite-as aqui. Preencher isso força o modelo GTR automático e acelera a convergência do MrBayes.</li>
-        </ul>
-    </div>
-</div>
+<footer>gerador de análises mrbayes · processamento 100% local no navegador</footer>
 
 <script>
-    const modal = document.getElementById("helpModal");
-    const btnHelp = document.getElementById("btnHelp");
-    const spanClose = document.getElementById("closeHelp");
+(function(){
 
-    btnHelp.onclick = function() { modal.style.display = "block"; }
-    spanClose.onclick = function() { modal.style.display = "none"; }
-    window.onclick = function(event) { if (event.target == modal) { modal.style.display = "none"; } }
+  const state = {
+    filename: null,
+    cleaned: '',
+    taxa: [],
+    ntax: null,
+    nchar: null,
+    datatype: null,
+    fixCount: 0,
+    warnings: []
+  };
 
-    function baixarInstalador() {
-        const batContent = `@echo off
-echo ===================================================
-echo   Instalador Automatico - MrBayes (Win e Ubuntu)
-echo ===================================================
-echo.
-echo [1/3] Verificando e configurando Linux (WSL)...
-wsl --install
-echo.
-echo [2/3] Instalando MrBayes-MPI no Ubuntu (Sem senha)...
-wsl -u root apt-get update
-wsl -u root apt-get install -y mrbayes
-echo.
-echo [3/3] Buscando executavel do Windows via API do GitHub...
-powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $url = (Invoke-RestMethod -Uri 'https://api.github.com/repos/NBISweden/MrBayes/releases').assets.browser_download_url | Where-Object { $_ -match 'win' -and $_ -match 'zip' } | Select-Object -First 1; Invoke-WebRequest -Uri $url -OutFile 'mrbayes_win.zip'"
-echo Extraindo arquivo e localizando mb.exe...
-powershell -Command "Expand-Archive -Path 'mrbayes_win.zip' -DestinationPath '.\\mrbayes_temp' -Force"
-powershell -Command "Get-ChildItem -Path '.\\mrbayes_temp' -Filter 'mb.exe' -Recurse | Copy-Item -Destination '.\\mb.exe' -Force"
-rmdir /s /q ".\\mrbayes_temp"
-del "mrbayes_win.zip"
-echo.
-echo ===================================================
-echo Instalacao concluida! 
-echo ===================================================
-pause`;
-        baixarArquivo('Instalar_Dependencias.bat', batContent);
+  // ---------------- CLEANING ----------------
+  function cleanNexus(raw){
+    let text = raw;
+    const warnings = [];
+    let fixCount = 0;
+
+    if (text.charCodeAt(0) === 0xFEFF){
+      text = text.slice(1);
+      warnings.push('Removida marca invisível de codificação (BOM) no início do arquivo.');
+      fixCount++;
     }
 
-    const dropZone = document.getElementById('drop-zone');
-    const fileInput = document.getElementById('file-input');
-    const nexusText = document.getElementById('nexusText');
-    const fileNameDisplay = document.getElementById('file-name-display');
+    const beforeEol = text;
+    text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    if (text !== beforeEol){
+      warnings.push('Quebras de linha do Windows/Mac convertidas para o padrão Unix.');
+      fixCount++;
+    }
 
-    dropZone.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
-    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-    dropZone.addEventListener('drop', (e) => {
-        e.preventDefault(); dropZone.classList.remove('dragover'); handleFile(e.dataTransfer.files[0]);
+    const smartMap = [
+      [/[\u2018\u2019\u201A\u201B]/g, "'"],
+      [/[\u201C\u201D\u201E\u201F]/g, '"'],
+      [/[\u2013\u2014]/g, '-'],
+      [/\u00A0/g, ' '],
+      [/\u2026/g, '...']
+    ];
+    let smartHit = false;
+    smartMap.forEach(([re, rep]) => {
+      if (re.test(text)){ smartHit = true; }
+      text = text.replace(re, rep);
+    });
+    if (smartHit){
+      warnings.push('Aspas curvas, travessões e espaços especiais substituídos por caracteres simples (ASCII).');
+      fixCount++;
+    }
+
+    const beforeCtrl = text;
+    text = text.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
+    if (text !== beforeCtrl){
+      warnings.push('Removidos caracteres de controle invisíveis que o MEGA/DnaSP às vezes deixa no arquivo.');
+      fixCount++;
+    }
+
+    const beforeTrail = text;
+    text = text.split('\n').map(l => l.replace(/[ \t]+$/,'')).join('\n');
+    if (text !== beforeTrail){
+      warnings.push('Espaços em branco no fim das linhas removidos.');
+      fixCount++;
+    }
+
+    const beforeBlank = text;
+    text = text.replace(/\n{3,}/g, '\n\n');
+    if (text !== beforeBlank){
+      warnings.push('Linhas em branco excessivas foram condensadas.');
+      fixCount++;
+    }
+
+    text = text.trim() + '\n';
+
+    // ensure starts with #NEXUS
+    const idx = text.search(/#NEXUS/i);
+    if (idx === -1){
+      text = '#NEXUS\n' + text;
+      warnings.push('O cabeçalho "#NEXUS" estava ausente e foi adicionado no início do arquivo.');
+      fixCount++;
+    } else if (idx > 0){
+      text = text.slice(idx);
+      warnings.push('Havia texto antes do cabeçalho "#NEXUS" — foi removido.');
+      fixCount++;
+    }
+    // normalize the header casing/spelling itself
+    text = text.replace(/^#nexus/i, '#NEXUS');
+
+    return { cleaned: text, warnings, fixCount };
+  }
+
+  // ---------------- PARSING ----------------
+  function parseInfo(text){
+    const info = { taxa: [], ntax: null, nchar: null, datatype: null };
+
+    const dim = text.match(/dimensions[^;]*ntax\s*=\s*(\d+)[^;]*nchar\s*=\s*(\d+)/i)
+             || text.match(/dimensions[^;]*nchar\s*=\s*(\d+)[^;]*ntax\s*=\s*(\d+)/i);
+    if (dim){
+      // handle either order by checking which label preceded which number using named lookups
+      const ntaxMatch = text.match(/ntax\s*=\s*(\d+)/i);
+      const ncharMatch = text.match(/nchar\s*=\s*(\d+)/i);
+      if (ntaxMatch) info.ntax = parseInt(ntaxMatch[1], 10);
+      if (ncharMatch) info.nchar = parseInt(ncharMatch[1], 10);
+    }
+
+    const typeMatch = text.match(/datatype\s*=\s*(\w+)/i);
+    if (typeMatch) info.datatype = typeMatch[1].toUpperCase();
+
+    // Try TAXLABELS block first
+    const taxlabelsMatch = text.match(/taxlabels([\s\S]*?);/i);
+    if (taxlabelsMatch){
+      info.taxa = tokenizeTaxa(taxlabelsMatch[1]);
+    }
+
+    // Fallback: read first token of each line inside MATRIX block
+    if (info.taxa.length === 0){
+      const matrixMatch = text.match(/matrix([\s\S]*?);/i);
+      if (matrixMatch){
+        const lines = matrixMatch[1].split('\n');
+        const seen = new Set();
+        lines.forEach(line => {
+          const trimmed = line.trim();
+          if (!trimmed || trimmed.startsWith('[')) return;
+          const tokens = tokenizeTaxa(trimmed);
+          if (tokens.length > 0 && !seen.has(tokens[0])){
+            seen.add(tokens[0]);
+            info.taxa.push(tokens[0]);
+          }
+        });
+      }
+    }
+
+    if (!info.ntax) info.ntax = info.taxa.length || null;
+
+    return info;
+  }
+
+  function tokenizeTaxa(chunk){
+    // handles quoted taxon names ('name with spaces') and plain whitespace-separated tokens
+    const tokens = [];
+    const re = /'([^']+)'|"([^"]+)"|(\S+)/g;
+    let m;
+    while ((m = re.exec(chunk)) !== null){
+      const val = (m[1] || m[2] || m[3] || '').trim();
+      if (val) tokens.push(val);
+    }
+    return tokens;
+  }
+
+  // ---------------- UI: FILE HANDLING ----------------
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('fileInput');
+  const pasteArea = document.getElementById('pasteArea');
+
+  dropzone.addEventListener('click', () => fileInput.click());
+  dropzone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') fileInput.click(); });
+  dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag'); });
+  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag'));
+  dropzone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropzone.classList.remove('drag');
+    if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files.length) handleFile(fileInput.files[0]);
+  });
+  document.getElementById('btnUsePaste').addEventListener('click', () => {
+    const txt = pasteArea.value;
+    if (!txt.trim()) return;
+    processText(txt, 'colado_manualmente.nex');
+  });
+
+  function handleFile(file){
+    const reader = new FileReader();
+    reader.onload = () => processText(reader.result, file.name);
+    reader.readAsText(file);
+  }
+
+  function processText(raw, filename){
+    const { cleaned, warnings, fixCount } = cleanNexus(raw);
+    const info = parseInfo(cleaned);
+
+    state.filename = filename;
+    state.cleaned = cleaned;
+    state.taxa = info.taxa;
+    state.ntax = info.ntax;
+    state.nchar = info.nchar;
+    state.datatype = info.datatype || 'DNA';
+    state.fixCount = fixCount;
+    state.warnings = warnings;
+
+    if (info.taxa.length === 0){
+      state.warnings.push('Não foi possível identificar automaticamente a lista de táxons — confira o arquivo original; o bloco TAXLABELS ou MATRIX pode estar em um formato incomum.');
+    }
+    if (!info.nchar){
+      state.warnings.push('Não foi possível confirmar o número de sítios (nchar) — verifique a linha "dimensions" do seu arquivo.');
+    }
+
+    renderReport();
+    renderOutgroupOptions();
+    suggestFilename();
+
+    const kindSelect = document.getElementById('dataKind');
+    kindSelect.value = guessDataKind(state.datatype);
+    updateModelFieldsVisibility();
+    updatePreview();
+  }
+
+  function guessDataKind(dt){
+    if (!dt) return 'dna';
+    const d = dt.toUpperCase();
+    if (d.includes('PROTEIN')) return 'protein';
+    if (d.includes('STANDARD') || d.includes('RESTRICTION')) return 'standard';
+    return 'dna';
+  }
+
+  // ---------------- REPORT ----------------
+  function renderReport(){
+    const report = document.getElementById('report');
+    report.classList.add('show');
+    document.getElementById('fileChip').textContent = state.filename || '';
+    document.getElementById('statTaxa').textContent = state.ntax ?? '—';
+    document.getElementById('statChar').textContent = state.nchar ?? '—';
+    document.getElementById('statType').textContent = state.datatype || '—';
+    document.getElementById('statFix').textContent = state.fixCount;
+
+    const head = document.getElementById('reportHead');
+    head.classList.toggle('has-warn', state.warnings.length > 0);
+
+    const warnList = document.getElementById('warnList');
+    warnList.innerHTML = '';
+    if (state.warnings.length === 0){
+      const p = document.createElement('p');
+      p.className = 'none';
+      p.textContent = 'Nenhuma inconsistência adicional encontrada além da limpeza padrão.';
+      warnList.appendChild(p);
+    } else {
+      state.warnings.forEach(w => {
+        const div = document.createElement('div');
+        div.className = 'warn-item';
+        div.innerHTML = '<span class="dot">●</span><span>' + escapeHtml(w) + '</span>';
+        warnList.appendChild(div);
+      });
+    }
+  }
+
+  function renderOutgroupOptions(){
+    const sel = document.getElementById('outgroupSelect');
+    sel.innerHTML = '';
+    state.taxa.forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t; opt.textContent = t;
+      sel.appendChild(opt);
+    });
+    const hint = sel.nextElementSibling;
+    hint.textContent = state.taxa.length
+      ? state.taxa.length + ' táxon(ns) detectado(s). Segure Ctrl/Cmd para selecionar mais de um.'
+      : 'Nenhum táxon detectado automaticamente — confira o arquivo carregado.';
+  }
+
+  function suggestFilename(){
+    const base = (state.filename || 'analise').replace(/\.(nex|nexus|txt)$/i, '');
+    document.getElementById('outFilename').value = base + '_mrbayes.nex';
+  }
+
+  function escapeHtml(s){
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ---------------- MODEL DEFINITIONS ----------------
+  const CLASSICAL_NAMES = {
+    '1-equal':'JC69', '1-estimate':'F81', '1-empirical':'F81 (freq. empírica fixa)',
+    '2-equal':'K80 (K2P)', '2-estimate':'HKY85', '2-empirical':'HKY85 (freq. empírica fixa)',
+    '6-equal':'SYM', '6-estimate':'GTR', '6-empirical':'GTR (freq. empírica fixa)'
+  };
+  function classicalModelName(nst, freq){
+    if (nst === 'mixed') return 'Mixed (rjMCMC) — amostra toda a família JC↔GTR, incluindo TrN, TIM1-3, TPM1-3, TVM, HKY, K80 etc.';
+    return CLASSICAL_NAMES[`${nst}-${freq}`] || '';
+  }
+  function freqPrsetValue(freq){
+    if (freq === 'equal') return 'fixed(equal)';
+    if (freq === 'empirical') return 'fixed(empirical)';
+    return 'dirichlet(1,1,1,1)';
+  }
+
+  const PROTEIN_MODEL_OPTIONS_HTML = `
+    <option value="poisson">Poisson</option>
+    <option value="equalin">Equalin</option>
+    <option value="jones" selected>Jones (JTT)</option>
+    <option value="dayhoff">Dayhoff</option>
+    <option value="wag">WAG</option>
+    <option value="mtrev">mtREV</option>
+    <option value="rtrev">rtREV</option>
+    <option value="cprev">cpREV</option>
+    <option value="vt">VT</option>
+    <option value="blosum">Blosum</option>
+    <option value="mixed">Mixed (rjMCMC)</option>`;
+  const NST_OPTIONS_HTML = `
+    <option value="1">1 taxa</option>
+    <option value="2" selected>2 taxas</option>
+    <option value="6">6 taxas (GTR)</option>
+    <option value="mixed">Mixed (rjMCMC)</option>`;
+  const FREQ_OPTIONS_HTML = `
+    <option value="equal">Igual</option>
+    <option value="estimate" selected>Estimada</option>
+    <option value="empirical">Empírica fixa (+F)</option>`;
+
+  // ---------------- MODEL FIELD VISIBILITY ----------------
+  function updateResolvedLabel(){
+    const nst = document.getElementById('nstStructure').value;
+    const freq = document.getElementById('baseFreq').value;
+    const label = classicalModelName(nst, freq);
+    document.getElementById('resolvedModelLabel').textContent = label ? 'Modelo resultante: ' + label : '';
+  }
+
+  function updateModelFieldsVisibility(){
+    const kind = document.getElementById('dataKind').value;
+    document.getElementById('dnaModelField').style.display = kind === 'dna' ? '' : 'none';
+    document.getElementById('baseFreqField').style.display = kind === 'dna' ? '' : 'none';
+    document.getElementById('proteinModelField').style.display = kind === 'protein' ? '' : 'none';
+    document.getElementById('codingField').style.display = kind === 'standard' ? '' : 'none';
+    document.getElementById('namedModelsHint').style.display = kind === 'dna' ? '' : 'none';
+
+    const ratesVal = document.getElementById('rates').value;
+    document.getElementById('ngammacatField').style.display = (ratesVal === 'gamma' || ratesVal === 'invgamma') ? '' : 'none';
+
+    const nst = document.getElementById('nstStructure').value;
+    const showFixed = kind === 'dna' && nst === '6';
+    document.getElementById('fixedRatesToggleRow').style.display = showFixed ? '' : 'none';
+    if (!showFixed){
+      document.getElementById('useFixedRates').checked = false;
+      document.getElementById('fixedRatesBlock').style.display = 'none';
+    }
+
+    updateResolvedLabel();
+
+    // regenerate partition model dropdowns to match the current data kind
+    partitionRows.querySelectorAll('.part-row').forEach(row => {
+      rebuildPartitionModelFields(row, kind);
     });
 
-    function handleFile(file) {
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            nexusText.value = e.target.result;
-            fileNameDisplay.style.color = "#27ae60";
-            fileNameDisplay.innerText = `Arquivo carregado: ${file.name}`;
-            let baseName = file.name.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9_]/g, "_");
-            document.getElementById('filename').value = baseName;
-        };
-        reader.readAsText(file);
+    updatePreview();
+  }
+
+  function rebuildPartitionModelFields(row, kind){
+    const oldNst = row.querySelector('.p-nst');
+    const oldFreq = row.querySelector('.p-freq');
+    const oldProtein = row.querySelector('.p-protein');
+
+    if (kind === 'protein'){
+      if (oldNst) oldNst.remove();
+      if (oldFreq) oldFreq.remove();
+      if (!row.querySelector('.p-protein')){
+        const sel = document.createElement('select');
+        sel.className = 'p-protein';
+        sel.innerHTML = PROTEIN_MODEL_OPTIONS_HTML;
+        sel.addEventListener('input', updatePreview);
+        sel.addEventListener('change', updatePreview);
+        row.insertBefore(sel, row.querySelector('.p-rates'));
+      }
+    } else {
+      if (oldProtein) oldProtein.remove();
+      if (!row.querySelector('.p-nst')){
+        const selNst = document.createElement('select');
+        selNst.className = 'p-nst';
+        selNst.innerHTML = NST_OPTIONS_HTML;
+        selNst.addEventListener('input', updatePreview);
+        selNst.addEventListener('change', updatePreview);
+        row.insertBefore(selNst, row.querySelector('.p-rates'));
+      }
+      if (!row.querySelector('.p-freq')){
+        const selFreq = document.createElement('select');
+        selFreq.className = 'p-freq';
+        selFreq.innerHTML = FREQ_OPTIONS_HTML;
+        selFreq.addEventListener('input', updatePreview);
+        selFreq.addEventListener('change', updatePreview);
+        row.insertBefore(selFreq, row.querySelector('.p-rates'));
+      }
+    }
+  }
+
+  document.getElementById('dataKind').addEventListener('change', updateModelFieldsVisibility);
+  document.getElementById('nstStructure').addEventListener('change', updateModelFieldsVisibility);
+  document.getElementById('baseFreq').addEventListener('change', updateResolvedLabel);
+  document.getElementById('rates').addEventListener('change', updateModelFieldsVisibility);
+
+  document.getElementById('useFixedRates').addEventListener('change', function(){
+    document.getElementById('fixedRatesBlock').style.display = this.checked ? 'block' : 'none';
+    updatePreview();
+  });
+
+  // ---------------- PARTITIONS ----------------
+  const partitionRows = document.getElementById('partitionRows');
+  const usePartitions = document.getElementById('usePartitions');
+  const singleModelBlock = document.getElementById('singleModelBlock');
+  const partitionsBlock = document.getElementById('partitionsBlock');
+
+  usePartitions.addEventListener('change', () => {
+    const on = usePartitions.checked;
+    singleModelBlock.style.display = on ? 'none' : 'block';
+    partitionsBlock.style.display = on ? 'block' : 'none';
+    if (on && partitionRows.children.length === 0){
+      addPartitionRow('gene1', 1, state.nchar || '');
+      addPartitionRow('gene2', '', '');
+    }
+    updatePreview();
+  });
+
+  function addPartitionRow(name, start, end){
+    const row = document.createElement('div');
+    row.className = 'part-row';
+    row.innerHTML = `
+      <input type="text" class="p-name" placeholder="nome da partição" value="${name || ''}">
+      <input type="number" class="p-start" placeholder="início" min="1" value="${start ?? ''}">
+      <input type="number" class="p-end" placeholder="fim" min="1" value="${end ?? ''}">
+      <select class="p-rates">
+        <option value="equal">equal</option>
+        <option value="gamma" selected>+G</option>
+        <option value="propinv">+I</option>
+        <option value="invgamma">+I+G</option>
+      </select>
+      <button type="button" class="icon-btn" title="remover partição">✕</button>
+    `;
+    row.querySelector('.icon-btn').addEventListener('click', () => { row.remove(); updatePreview(); });
+    row.querySelectorAll('input, select').forEach(el => el.addEventListener('input', updatePreview));
+    rebuildPartitionModelFields(row, document.getElementById('dataKind').value);
+    partitionRows.appendChild(row);
+  }
+
+  document.getElementById('addPartition').addEventListener('click', () => {
+    addPartitionRow('', '', '');
+  });
+
+  function collectPartitions(){
+    const rows = [...partitionRows.querySelectorAll('.part-row')];
+    return rows.map(r => ({
+      name: r.querySelector('.p-name').value.trim() || 'partX',
+      start: r.querySelector('.p-start').value.trim(),
+      end: r.querySelector('.p-end').value.trim(),
+      nst: r.querySelector('.p-nst') ? r.querySelector('.p-nst').value : '2',
+      freq: r.querySelector('.p-freq') ? r.querySelector('.p-freq').value : 'estimate',
+      protein: r.querySelector('.p-protein') ? r.querySelector('.p-protein').value : 'jones',
+      rates: r.querySelector('.p-rates').value
+    })).filter(p => p.start && p.end);
+  }
+
+  // ---------------- MODEL LINE BUILDERS ----------------
+  function dnaModelLines(applyTo, nst, freq, ratesVal, ngammacat, fixedRates){
+    const at = applyTo ? `applyto=(${applyTo}) ` : '';
+    let lsetLine = `    lset ${at}nst=${nst} rates=${ratesVal}`;
+    if ((ratesVal === 'gamma' || ratesVal === 'invgamma') && ngammacat) lsetLine += ` ngammacat=${ngammacat}`;
+    lsetLine += ';';
+    const lines = [lsetLine, `    prset ${at}statefreqpr=${freqPrsetValue(freq)};`];
+    if (fixedRates && nst === '6'){
+      lines.push(`    prset ${at}revmatpr=fixed(${fixedRates.join(',')});`);
+    }
+    return lines;
+  }
+
+  function proteinModelLines(applyTo, modelKey, ratesVal, ngammacat){
+    const at = applyTo ? `applyto=(${applyTo}) ` : '';
+    let lsetLine = `    lset ${at}rates=${ratesVal}`;
+    if ((ratesVal === 'gamma' || ratesVal === 'invgamma') && ngammacat) lsetLine += ` ngammacat=${ngammacat}`;
+    lsetLine += ';';
+    return [lsetLine, `    prset ${at}aamodelpr=fixed(${modelKey});`];
+  }
+
+  function standardModelLines(applyTo, ratesVal, codingVal, ngammacat){
+    const at = applyTo ? `applyto=(${applyTo}) ` : '';
+    let lsetLine = `    lset ${at}coding=${codingVal} rates=${ratesVal}`;
+    if ((ratesVal === 'gamma' || ratesVal === 'invgamma') && ngammacat) lsetLine += ` ngammacat=${ngammacat}`;
+    lsetLine += ';';
+    return [lsetLine];
+  }
+
+  // ---------------- GENERATE MRBAYES BLOCK ----------------
+  function buildBlock(){
+    const lines = [];
+    const push = (s='') => lines.push(s);
+
+    const autoclose = document.getElementById('useAutoclose').checked;
+    const useLog = document.getElementById('useLog').checked;
+    const useSumm = document.getElementById('useSumm').checked;
+    const useStoprule = document.getElementById('useStoprule').checked;
+    const dataKind = document.getElementById('dataKind').value;
+    const ngammacat = document.getElementById('ngammacat').value || '4';
+
+    const ngen = document.getElementById('ngen').value || '1000000';
+    const samplefreq = document.getElementById('samplefreq').value || '1000';
+    const nruns = document.getElementById('nruns').value || '2';
+    const nchains = document.getElementById('nchains').value || '4';
+    const burninfrac = document.getElementById('burninfrac').value || '0.25';
+    const temp = document.getElementById('temp').value || '0.2';
+
+    const outSel = [...document.getElementById('outgroupSelect').selectedOptions].map(o => o.value);
+
+    push('begin mrbayes;');
+    if (autoclose) push('    set autoclose=yes nowarn=yes;');
+    if (useLog) push('    log start filename=analise_mrbayes.log replace;');
+    push('');
+
+    if (usePartitions.checked){
+      const parts = collectPartitions();
+      if (parts.length === 0){
+        push('    [Nenhuma partição definida ainda — adicione partições no passo 2]');
+      } else {
+        push('    [Definição das partições]');
+        parts.forEach(p => push(`    charset ${p.name} = ${p.start}-${p.end};`));
+        push(`    partition genes = ${parts.length}: ${parts.map(p => p.name).join(', ')};`);
+        push('    set partition = genes;');
+        push('');
+        push('    [Modelo por partição]');
+        parts.forEach((p, i) => {
+          const idx = i + 1;
+          if (dataKind === 'protein') proteinModelLines(idx, p.protein, p.rates, ngammacat).forEach(push);
+          else if (dataKind === 'standard') standardModelLines(idx, p.rates, document.getElementById('coding').value, ngammacat).forEach(push);
+          else dnaModelLines(idx, p.nst, p.freq, p.rates, ngammacat, null).forEach(push);
+        });
+        if (dataKind === 'protein') push('    unlink aamodel=(all) shape=(all) pinvar=(all);');
+        else if (dataKind === 'standard') push('    unlink shape=(all);');
+        else push('    unlink statefreq=(all) revmat=(all) shape=(all) pinvar=(all) tratio=(all);');
+        push('    prset applyto=(all) ratepr=variable;');
+      }
+    } else {
+      const ratesVal = document.getElementById('rates').value;
+      if (dataKind === 'protein'){
+        const modelKey = document.getElementById('modelProtein').value;
+        push('    [Matriz de substituição de aminoácidos]');
+        proteinModelLines(null, modelKey, ratesVal, ngammacat).forEach(push);
+      } else if (dataKind === 'standard'){
+        const codingVal = document.getElementById('coding').value;
+        push('    [Modelo para dados discretos/morfológicos]');
+        standardModelLines(null, ratesVal, codingVal, ngammacat).forEach(push);
+      } else {
+        const nst = document.getElementById('nstStructure').value;
+        const freq = document.getElementById('baseFreq').value;
+        let fixedRates = null;
+        if (document.getElementById('useFixedRates').checked && nst === '6'){
+          fixedRates = ['rateAC','rateAG','rateAT','rateCG','rateCT','rateGT']
+            .map(id => document.getElementById(id).value || '1');
+        }
+        push(`    [Modelo de substituição — ${classicalModelName(nst, freq)}]`);
+        dnaModelLines(null, nst, freq, ratesVal, ngammacat, fixedRates).forEach(push);
+      }
     }
 
-    function fastaToNexus(fastaStr) {
-        let lines = fastaStr.split('\n');
-        let taxa = [];
-        let seqs = [];
-        let currentSeq = "";
-        
-        for (let line of lines) {
-            line = line.trim();
-            if (line.startsWith(">")) {
-                if (currentSeq !== "") {
-                    seqs.push(currentSeq);
-                    currentSeq = "";
-                }
-                
-                let tName = line.substring(1).trim();
-                tName = tName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ç/g, 'c').replace(/Ç/g, 'C');
-                tName = tName.replace(/\s+/g, '_');
-                tName = tName.replace(/[^a-zA-Z0-9_.-]/g, ''); 
-                
-                // Trunca o nome em 90 caracteres para respeitar o limite de 99 do MrBayes
-                if (tName.length > 90) {
-                    tName = tName.substring(0, 90);
-                }
-                
-                // Algoritmo de segurança: Garante que os nomes truncados não fiquem duplicados
-                let baseName = tName;
-                let counter = 2;
-                while (taxa.includes(tName)) {
-                    // Diminui um pouco mais para caber o sufixo numérico (_2, _3, etc)
-                    tName = baseName.substring(0, 85) + "_" + counter;
-                    counter++;
-                }
-                
-                taxa.push(tName);
-            } else {
-                currentSeq += line.replace(/\s+/g, '');
-            }
-        }
-        if (currentSeq !== "") seqs.push(currentSeq);
-        
-        if (taxa.length === 0) return null;
-        
-        let ntax = taxa.length;
-        let nchar = seqs[0].length;
-        let maxLen = Math.max(...taxa.map(t => t.length));
-        
-        let nexus = "#NEXUS\nBEGIN DATA;\n";
-        nexus += `    DIMENSIONS NTAX=${ntax} NCHAR=${nchar};\n`;
-        nexus += `    FORMAT DATATYPE=DNA MISSING=? GAP=- MATCHCHAR=.;\n`;
-        nexus += "    MATRIX\n";
-        for (let i = 0; i < ntax; i++) {
-            nexus += `    ${taxa[i].padEnd(maxLen + 4)} ${seqs[i]}\n`;
-        }
-        nexus += ";\nEND;";
-        return nexus;
+    push('');
+    if (outSel.length === 1){
+      push('    [Grupo externo]');
+      push(`    outgroup ${outSel[0]};`);
+    } else if (outSel.length > 1){
+      push('    [Grupo externo]');
+      push(`    taxset OUTGROUP = ${outSel.join(' ')};`);
+      push('    outgroup OUTGROUP;');
     }
 
-    function gerarArquivos() {
-        let content = nexusText.value.trim();
-        const filename = document.getElementById('filename').value.trim() || 'analise';
-        const ngen = document.getElementById('ngen').value;
-        const samplefreq = document.getElementById('samplefreq').value;
-        const threads = document.getElementById('threads').value || 4;
-        
-        // Limpa o outgroup também limitando os caracteres por segurança
-        let outgroup = document.getElementById('outgroup').value.trim().replace(/[^a-zA-Z0-9_.-]/g, ''); 
-        if (outgroup.length > 90) {
-            outgroup = outgroup.substring(0, 90);
-        }
+    push('');
+    push('    [Parâmetros da MCMC]');
+    let mcmcp = `    mcmcp ngen=${ngen} samplefreq=${samplefreq} printfreq=${samplefreq} diagnfreq=${Math.max(parseInt(samplefreq)||1000, 5000)} nruns=${nruns} nchains=${nchains} temp=${temp} burninfrac=${burninfrac} relburnin=yes`;
+    if (useStoprule) mcmcp += ' stoprule=yes stopval=0.01';
+    mcmcp += ';';
+    push(mcmcp);
+    push('    mcmc;');
 
-        let nst = document.getElementById('nst').value;
-        const rates = document.getElementById('rates').value;
-        const os = document.getElementById('os').value;
-
-        const r_ac = document.getElementById('r-ac').value.trim();
-        const r_ag = document.getElementById('r-ag').value.trim();
-        const r_at = document.getElementById('r-at').value.trim();
-        const r_cg = document.getElementById('r-cg').value.trim();
-        const r_ct = document.getElementById('r-ct').value.trim();
-        const r_gt = document.getElementById('r-gt').value.trim();
-
-        if (!content) {
-            alert("Nenhum código encontrado.");
-            return;
-        }
-
-        if (content.startsWith(">")) {
-            content = fastaToNexus(content);
-            if (!content) {
-                alert("Erro ao ler FASTA. Verifique a formatação.");
-                return;
-            }
-        } else {
-            content = content.replace(/begin mrbayes;[\s\S]*?end;/gi, ''); 
-            content = content.replace(/nexus\s*$/gi, ''); 
-            content = content.replace(/^.*File generated by DnaSP.*$/gim, ''); 
-            
-            content = content.replace(/['"]/g, ''); 
-            content = content.replace(/:/g, '_');   
-            
-            content = content.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
-            content = content.replace(/ç/g, 'c').replace(/Ç/g, 'C');
-            
-            content = content.trim();
-            if (!content.toUpperCase().startsWith('#NEXUS')) {
-                content = "#NEXUS\n" + content;
-            }
-        }
-
-        let prsetStr = "";
-        if (r_ac && r_ag && r_at && r_cg && r_ct && r_gt) {
-            nst = "6";
-            prsetStr = `\n    prset revmatpr=fixed(${r_ac},${r_ag},${r_at},${r_cg},${r_ct},${r_gt});`;
-        }
-
-        let outgroupStr = outgroup ? `\n    outgroup ${outgroup};` : "";
-
-        const mrbayesBlock = `\n\nbegin mrbayes;
-    set autoclose=yes;${outgroupStr}
-    lset nst=${nst} rates=${rates};${prsetStr}
-    mcmc ngen=${ngen} samplefreq=${samplefreq} nchains=${threads} savebrlens=yes filename=${filename}_run;
-    sump burninfrac=0.25;
-    sumt burninfrac=0.25;
-end;`;
-
-        const finalNexus = content + mrbayesBlock;
-        const nexusFileName = filename + ".nexus";
-
-        baixarArquivo(nexusFileName, finalNexus);
-
-        if (os === 'win') {
-            const batContent = `.\\mb.exe ${nexusFileName}\npause`;
-            baixarArquivo(`Rodar_${filename}_WIN.bat`, batContent);
-        } else if (os === 'mpi') {
-            const batContent = `@echo off
-echo Iniciando analise multithread no Ubuntu (WSL)...
-wsl mpirun -np ${threads} mb ${nexusFileName}
-pause`;
-            baixarArquivo(`Rodar_${filename}_MPI.bat`, batContent);
-        }
+    if (useSumm){
+      push('');
+      push('    [Resumo dos resultados]');
+      push(`    sump burnin=0 relburnin=yes burninfrac=${burninfrac};`);
+      push(`    sumt burnin=0 relburnin=yes burninfrac=${burninfrac};`);
     }
 
-    function baixarArquivo(nomeArquivo, conteudo) {
-        const elemento = document.createElement('a');
-        elemento.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(conteudo));
-        elemento.setAttribute('download', nomeArquivo);
-        elemento.style.display = 'none';
-        document.body.appendChild(elemento);
-        elemento.click();
-        document.body.removeChild(elemento);
+    if (useLog){
+      push('');
+      push('    log stop;');
     }
+    push('end;');
+
+    return lines.join('\n');
+  }
+
+  function highlight(code){
+    return escapeHtml(code)
+      .replace(/(\[[^\]]*\])/g, '<span class="cm">$1</span>')
+      .replace(/^(\s*)(begin|end|mcmc|mcmcp|lset|prset|charset|partition|set|outgroup|taxset|log|sump|sumt|unlink)\b/gm,
+        (m, sp, kw) => sp + '<span class="kw">' + kw + '</span>')
+      .replace(/(=\s*)([\w.,()]+)/g, (m, eq, val) => eq + '<span class="amber">' + val + '</span>');
+  }
+
+  function updatePreview(){
+    const pre = document.getElementById('previewCode');
+    const btn = document.getElementById('btnDownload');
+    const scriptBtn = document.getElementById('btnDownloadScript');
+    if (!state.cleaned){
+      pre.innerHTML = '<span class="badge-empty">Carregue um arquivo no passo 1 para ver o bloco de comandos aqui.</span>';
+      btn.disabled = true;
+      scriptBtn.disabled = true;
+      return;
+    }
+    const block = buildBlock();
+    pre.innerHTML = highlight(block);
+    btn.disabled = false;
+    scriptBtn.disabled = false;
+    updateRunbox();
+  }
+
+  // wire up every control to refresh the preview live
+  ['dataKind','nstStructure','baseFreq','modelProtein','coding','rates','ngammacat','ngen','samplefreq','nruns','nchains','burninfrac','temp',
+   'useStoprule','useAutoclose','useLog','useSumm','outgroupSelect','outFilename',
+   'rateAC','rateAG','rateAT','rateCG','rateCT','rateGT',
+   'execWin','execUnix','execMpi','mpirunCmd','npCount']
+   .forEach(id => {
+     const el = document.getElementById(id);
+     el.addEventListener('input', updatePreview);
+     el.addEventListener('change', updatePreview);
+   });
+
+  // ---------------- PLATFORM ----------------
+  const platformInputs = document.querySelectorAll('input[name="platform"]');
+
+  function currentPlatform(){
+    return document.querySelector('input[name="platform"]:checked').value;
+  }
+
+  function updatePlatformUI(){
+    const val = currentPlatform();
+    document.querySelectorAll('#platformGroup .pill').forEach(p => {
+      p.classList.toggle('active', p.dataset.value === val);
+    });
+    document.getElementById('platformExtraWin').style.display = val === 'win' ? '' : 'none';
+    document.getElementById('platformExtraUnix').style.display = val === 'unix' ? '' : 'none';
+    document.getElementById('platformExtraMpi').style.display = val === 'mpi' ? '' : 'none';
+    const label = document.getElementById('btnScriptLabel');
+    label.textContent = val === 'win' ? 'Baixar script (.bat)'
+      : val === 'unix' ? 'Baixar script (.sh)'
+      : 'Baixar script (.sh) para WSL';
+    updateRunbox();
+  }
+
+  platformInputs.forEach(inp => inp.addEventListener('change', updatePlatformUI));
+
+  function updateNpSuggestion(){
+    const nruns = parseInt(document.getElementById('nruns').value) || 2;
+    const nchains = parseInt(document.getElementById('nchains').value) || 4;
+    document.getElementById('npCount').value = nruns * nchains;
+  }
+  document.getElementById('nruns').addEventListener('input', updateNpSuggestion);
+  document.getElementById('nchains').addEventListener('input', updateNpSuggestion);
+
+  function outputFilename(){
+    const f = document.getElementById('outFilename').value.trim() || 'analise_mrbayes.nex';
+    return f.endsWith('.nex') || f.endsWith('.nexus') ? f : f + '.nex';
+  }
+
+  function updateRunbox(){
+    const val = currentPlatform();
+    const title = document.getElementById('runboxTitle');
+    const box = document.getElementById('runboxText');
+    const fname = outputFilename();
+    if (val === 'win'){
+      const exe = document.getElementById('execWin').value.trim() || 'mb.exe';
+      title.textContent = 'Como iniciar no Windows';
+      box.innerHTML = `Abra o Prompt de Comando (cmd) na pasta onde salvou o arquivo e rode: <code>${escapeHtml(exe)} ${escapeHtml(fname)}</code>. A MCMC começa sozinha — não é preciso digitar mais nada.`;
+    } else if (val === 'unix'){
+      const exe = document.getElementById('execUnix').value.trim() || 'mb';
+      title.textContent = 'Como iniciar no Linux/macOS';
+      box.innerHTML = `Abra um terminal na pasta onde salvou o arquivo e rode: <code>${escapeHtml(exe)} ${escapeHtml(fname)}</code>.`;
+    } else {
+      const exe = document.getElementById('execMpi').value.trim() || 'mb';
+      const mpirun = document.getElementById('mpirunCmd').value.trim() || 'mpirun';
+      const np = document.getElementById('npCount').value || '8';
+      title.textContent = 'Como iniciar no WSL (Ubuntu) com MPI';
+      box.innerHTML = `Abra o terminal do Ubuntu (WSL), entre na pasta do arquivo — algo como <code>cd /mnt/c/Users/seu_usuario/pasta</code> — e rode: <code>${escapeHtml(mpirun)} -np ${escapeHtml(np)} ${escapeHtml(exe)} ${escapeHtml(fname)}</code>. Ou use o script pronto abaixo.`;
+    }
+  }
+
+  // ---------------- DOWNLOAD ----------------
+  document.getElementById('btnDownload').addEventListener('click', () => {
+    if (!state.cleaned) return;
+    const block = buildBlock();
+    const finalContent = state.cleaned.replace(/\n?$/,'\n') + '\n' + block + '\n';
+    const blob = new Blob([finalContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = outputFilename();
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById('btnDownloadScript').addEventListener('click', () => {
+    if (!state.cleaned) return;
+    const val = currentPlatform();
+    const fname = outputFilename();
+    let content, outName;
+
+    if (val === 'win'){
+      const exe = document.getElementById('execWin').value.trim() || 'mb.exe';
+      content = `@echo off\r\n${exe} "${fname}"\r\npause\r\n`;
+      outName = 'rodar_analise.bat';
+    } else if (val === 'unix'){
+      const exe = document.getElementById('execUnix').value.trim() || 'mb';
+      content = `#!/bin/bash\nset -e\ncd "$(dirname "$0")"\n${exe} "${fname}"\n`;
+      outName = 'rodar_analise.sh';
+    } else {
+      const exe = document.getElementById('execMpi').value.trim() || 'mb';
+      const mpirun = document.getElementById('mpirunCmd').value.trim() || 'mpirun';
+      const np = document.getElementById('npCount').value || '8';
+      content = `#!/bin/bash\nset -e\ncd "$(dirname "$0")"\n${mpirun} -np ${np} ${exe} "${fname}"\n`;
+      outName = 'rodar_analise_mpi.sh';
+    }
+
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = outName;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  // ---------------- INIT ----------------
+  updateNpSuggestion();
+  updatePlatformUI();
+  updateModelFieldsVisibility();
+
+})();
 </script>
-
 </body>
 </html>
