@@ -517,14 +517,14 @@
 
   <!-- STEP 1 -->
   <section class="step" id="stepUpload">
-    <div class="step-head"><div class="step-num">01</div><h2>Carregue o arquivo NEXUS</h2></div>
-    <p class="step-desc">Arraste o arquivo exportado do MEGA ou DnaSP6, ou cole o conteúdo diretamente. A página vai limpar caracteres inválidos e mostrar um resumo do que encontrou.</p>
+    <div class="step-head"><div class="step-num">01</div><h2>Carregue o arquivo NEXUS ou FASTA</h2></div>
+    <p class="step-desc">Arraste o arquivo exportado do MEGA ou DnaSP6 (.nex/.nexus) — ou um arquivo FASTA (.fasta/.fa/.fas/.fna), que é convertido automaticamente para NEXUS. A página também limpa caracteres inválidos e mostra um resumo do que encontrou.</p>
     <div class="step-body">
       <div class="dropzone" id="dropzone" tabindex="0">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
-        <div class="dz-title">Arraste o arquivo .nex / .nexus aqui</div>
+        <div class="dz-title">Arraste o arquivo .nex, .nexus ou .fasta aqui</div>
         <div class="dz-sub">ou clique para escolher do computador</div>
-        <input type="file" id="fileInput" accept=".nex,.nexus,.txt">
+        <input type="file" id="fileInput" accept=".nex,.nexus,.fasta,.fa,.fas,.fna,.faa,.txt">
       </div>
 
       <div class="or-paste">ou cole o texto do arquivo</div>
@@ -750,7 +750,7 @@ begin data;
   <!-- STEP 5 -->
   <section class="step" id="stepPlatform">
     <div class="step-head"><div class="step-num">05</div><h2>Onde a análise vai rodar?</h2></div>
-    <p class="step-desc">O comando para iniciar a análise muda conforme a plataforma — escolha onde seus colegas vão rodar o arquivo. O bloco de comandos do NEXUS é o mesmo; o que muda é a instrução de execução (e o uso de MPI).</p>
+    <p class="step-desc">Isto é sobre o computador onde o <strong>MrBayes</strong> vai processar a análise — não sobre esta página, que já funciona em qualquer navegador, em qualquer sistema (Windows, Ubuntu, macOS). O bloco de comandos do NEXUS é o mesmo nas três opções abaixo; o que muda é a instrução de execução (e o uso de MPI).</p>
     <div class="step-body">
       <div class="pill-group" id="platformGroup">
         <label class="pill" data-value="win">
@@ -760,12 +760,12 @@ begin data;
         </label>
         <label class="pill" data-value="unix">
           <input type="radio" name="platform" value="unix">
-          <div class="p-title">Linux / macOS nativo</div>
-          <div class="p-sub">Uma única cadeia de execução, sem MPI</div>
+          <div class="p-title">Ubuntu / Linux nativo</div>
+          <div class="p-sub">MrBayes instalado direto no Ubuntu (ou macOS), sem MPI</div>
         </label>
         <label class="pill" data-value="mpi">
           <input type="radio" name="platform" value="mpi">
-          <div class="p-title">WSL (Ubuntu) com MPI</div>
+          <div class="p-title">Ubuntu com MPI (WSL ou nativo)</div>
           <div class="p-sub">mrbayes-mpi rodando as cadeias em paralelo</div>
         </label>
       </div>
@@ -798,7 +798,7 @@ begin data;
           <div class="field">
             <label for="npCount">Número de processos (-np)</label>
             <input type="number" id="npCount" value="8" min="1">
-            <div class="hint">Sugerido = nruns × nchains (ajustado automaticamente ao mudar o passo 03). Não ultrapasse o nº de núcleos disponíveis no WSL.</div>
+            <div class="hint">Sugerido = nruns × nchains (ajustado automaticamente ao mudar o passo 03). Não ultrapasse o nº de núcleos disponíveis (confira com <code style="font-family:'IBM Plex Mono',monospace">nproc</code> no terminal do Ubuntu).</div>
           </div>
         </div>
       </div>
@@ -857,6 +857,111 @@ begin data;
     fixCount: 0,
     warnings: []
   };
+
+  // ---------------- FASTA DETECTION & CONVERSION ----------------
+  function detectFormat(raw, filename){
+    const trimmed = raw.replace(/^\uFEFF/, '').trimStart();
+    if (trimmed.startsWith('>')) return 'fasta';
+    if (/^#NEXUS/i.test(trimmed) || /\bbegin\s+(data|characters|taxa)\b/i.test(trimmed)) return 'nexus';
+    if (filename && /\.(fa|fas|fasta|fna|faa)$/i.test(filename)) return 'fasta';
+    return 'nexus';
+  }
+
+  function parseFasta(raw){
+    const text = raw.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    const lines = text.split('\n');
+    const records = [];
+    let current = null;
+    lines.forEach(line => {
+      if (line.startsWith('>')){
+        if (current) records.push(current);
+        current = { rawName: line.slice(1).trim(), seq: '' };
+      } else if (current){
+        current.seq += line.trim();
+      }
+    });
+    if (current) records.push(current);
+    return records.filter(r => r.seq.length > 0 || r.rawName.length > 0);
+  }
+
+  function sanitizeTaxonName(name, used){
+    let clean = (name || '').trim().replace(/\s+/g, '_');
+    clean = clean.replace(/['"()\[\]{}/\\,;:=*`+<>]/g, '');
+    clean = clean.replace(/_+/g, '_').replace(/^_+|_+$/g, '');
+    if (!clean) clean = 'taxon';
+    let finalName = clean;
+    let n = 2;
+    while (used.has(finalName)){
+      finalName = clean + '_' + n;
+      n++;
+    }
+    used.add(finalName);
+    return finalName;
+  }
+
+  function guessSeqDataType(records){
+    let total = 0, nonNucleotide = 0, hasU = false, hasT = false;
+    const nucSet = new Set('ACGTUN-?.*RYKMSWBDHV'.split(''));
+    records.forEach(r => {
+      const seq = r.seq.toUpperCase();
+      for (let i = 0; i < seq.length; i++){
+        const ch = seq[i];
+        if (ch === 'U') hasU = true;
+        if (ch === 'T') hasT = true;
+        total++;
+        if (!nucSet.has(ch)) nonNucleotide++;
+      }
+    });
+    if (total === 0) return 'dna';
+    if ((nonNucleotide / total) > 0.1) return 'protein';
+    return (hasU && !hasT) ? 'rna' : 'dna';
+  }
+
+  function convertFastaToNexus(raw, filename){
+    const warnings = [];
+    const records = parseFasta(raw);
+
+    if (records.length === 0){
+      warnings.push('Não foi possível ler nenhuma sequência no arquivo FASTA — confira se ele começa com ">" seguido do nome de cada táxon.');
+      return { nexusText: '#NEXUS\n', warnings };
+    }
+
+    const used = new Set();
+    records.forEach(r => {
+      const clean = sanitizeTaxonName(r.rawName, used);
+      if (clean !== r.rawName.trim().replace(/\s+/g, '_')){
+        warnings.push(`O nome do táxon "${r.rawName}" continha espaços/caracteres não permitidos no NEXUS e foi convertido para "${clean}".`);
+      }
+      r.name = clean;
+    });
+
+    const lengths = records.map(r => r.seq.length);
+    const maxLen = Math.max(...lengths);
+    const minLen = Math.min(...lengths);
+    if (maxLen !== minLen){
+      warnings.push(`As sequências do FASTA não têm todas o mesmo comprimento (de ${minLen} a ${maxLen} caracteres) — isso geralmente indica que elas não estão alinhadas. As mais curtas foram completadas com gaps ("-") no final só para o arquivo abrir; alinhe as sequências (ex: MAFFT, MUSCLE, Clustal) antes de interpretar os resultados da análise.`);
+    }
+
+    const datatype = guessSeqDataType(records);
+    const dtLabel = datatype === 'protein' ? 'protein' : (datatype === 'rna' ? 'rna' : 'dna');
+    warnings.push(`Tipo de dado detectado a partir das sequências: ${dtLabel.toUpperCase()}. Confira/ajuste no passo 2 se necessário.`);
+
+    const nameWidth = Math.max(...records.map(r => r.name.length)) + 2;
+    const lines = [];
+    lines.push('#NEXUS');
+    lines.push('[Convertido automaticamente de FASTA' + (filename ? ' (' + filename + ')' : '') + ']');
+    lines.push('begin data;');
+    lines.push(`  dimensions ntax=${records.length} nchar=${maxLen};`);
+    lines.push(`  format datatype=${dtLabel} missing=? gap=-;`);
+    lines.push('  matrix');
+    records.forEach(r => {
+      lines.push('    ' + r.name.padEnd(nameWidth, ' ') + r.seq.toUpperCase().padEnd(maxLen, '-'));
+    });
+    lines.push('  ;');
+    lines.push('end;');
+
+    return { nexusText: lines.join('\n') + '\n', warnings };
+  }
 
   // ---------------- CLEANING ----------------
   function cleanNexus(raw){
@@ -1022,7 +1127,17 @@ begin data;
   }
 
   function processText(raw, filename){
-    const { cleaned, warnings, fixCount } = cleanNexus(raw);
+    const format = detectFormat(raw, filename);
+    let fastaWarnings = [];
+    let sourceText = raw;
+
+    if (format === 'fasta'){
+      const conv = convertFastaToNexus(raw, filename);
+      sourceText = conv.nexusText;
+      fastaWarnings = conv.warnings;
+    }
+
+    const { cleaned, warnings, fixCount } = cleanNexus(sourceText);
     const info = parseInfo(cleaned);
 
     state.filename = filename;
@@ -1032,7 +1147,7 @@ begin data;
     state.nchar = info.nchar;
     state.datatype = info.datatype || 'DNA';
     state.fixCount = fixCount;
-    state.warnings = warnings;
+    state.warnings = fastaWarnings.concat(warnings);
 
     if (info.taxa.length === 0){
       state.warnings.push('Não foi possível identificar automaticamente a lista de táxons — confira o arquivo original; o bloco TAXLABELS ou MATRIX pode estar em um formato incomum.');
@@ -1104,7 +1219,7 @@ begin data;
   }
 
   function suggestFilename(){
-    const base = (state.filename || 'analise').replace(/\.(nex|nexus|txt)$/i, '');
+    const base = (state.filename || 'analise').replace(/\.(nex|nexus|txt|fasta|fa|fas|fna|faa)$/i, '');
     document.getElementById('outFilename').value = base + '_mrbayes.nex';
   }
 
@@ -1477,7 +1592,7 @@ begin data;
     const label = document.getElementById('btnScriptLabel');
     label.textContent = val === 'win' ? 'Baixar script (.bat)'
       : val === 'unix' ? 'Baixar script (.sh)'
-      : 'Baixar script (.sh) para WSL';
+      : 'Baixar script (.sh) com MPI';
     updateRunbox();
   }
 
@@ -1507,14 +1622,14 @@ begin data;
       box.innerHTML = `Abra o Prompt de Comando (cmd) na pasta onde salvou o arquivo e rode: <code>${escapeHtml(exe)} ${escapeHtml(fname)}</code>. A MCMC começa sozinha — não é preciso digitar mais nada.`;
     } else if (val === 'unix'){
       const exe = document.getElementById('execUnix').value.trim() || 'mb';
-      title.textContent = 'Como iniciar no Linux/macOS';
-      box.innerHTML = `Abra um terminal na pasta onde salvou o arquivo e rode: <code>${escapeHtml(exe)} ${escapeHtml(fname)}</code>.`;
+      title.textContent = 'Como iniciar no Ubuntu/Linux';
+      box.innerHTML = `Abra o terminal na pasta onde salvou o arquivo e rode: <code>${escapeHtml(exe)} ${escapeHtml(fname)}</code>. A MCMC começa sozinha — não é preciso digitar mais nada.`;
     } else {
       const exe = document.getElementById('execMpi').value.trim() || 'mb';
       const mpirun = document.getElementById('mpirunCmd').value.trim() || 'mpirun';
       const np = document.getElementById('npCount').value || '8';
-      title.textContent = 'Como iniciar no WSL (Ubuntu) com MPI';
-      box.innerHTML = `Abra o terminal do Ubuntu (WSL), entre na pasta do arquivo — algo como <code>cd /mnt/c/Users/seu_usuario/pasta</code> — e rode: <code>${escapeHtml(mpirun)} -np ${escapeHtml(np)} ${escapeHtml(exe)} ${escapeHtml(fname)}</code>. Ou use o script pronto abaixo.`;
+      title.textContent = 'Como iniciar no Ubuntu com MPI';
+      box.innerHTML = `Abra o terminal do Ubuntu (dentro do WSL, se for o seu caso, entre na pasta do Windows com algo como <code>cd /mnt/c/Users/seu_usuario/pasta</code>) e rode: <code>${escapeHtml(mpirun)} -np ${escapeHtml(np)} ${escapeHtml(exe)} ${escapeHtml(fname)}</code>. Ou use o script pronto abaixo.`;
     }
   }
 
