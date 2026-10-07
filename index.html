@@ -514,6 +514,56 @@
 </header>
 
 <div class="wrap">
+  <!-- STEP 0: INSTALL -->
+  <section class="step" id="stepInstall">
+    <div class="step-head"><div class="step-num">00</div><h2>Instale o MrBayes</h2></div>
+    <p class="step-desc">Baixe o MrBayes para o seu sistema ou gere um script que baixa e instala automaticamente. Se você já tem o MrBayes instalado, pode pular para o passo 1.</p>
+    <div class="step-body">
+      <div class="pill-group" id="installPlatformGroup">
+        <label class="pill" data-value="win">
+          <input type="radio" name="installPlatform" value="win" checked>
+          <div class="p-title">Windows</div>
+          <div class="p-sub">Baixar o .zip pré-compilado ou gerar script .bat</div>
+        </label>
+<label class="pill" data-value="unix">
+  <input type="radio" name="installPlatform" value="unix">
+  <div class="p-title">Ubuntu / Linux / macOS</div>
+  <div class="p-sub">Baixar o código-fonte ou gerar script .sh</div>
+</label>
+<label class="pill" data-value="wsl">
+  <input type="radio" name="installPlatform" value="wsl">
+  <div class="p-title">Windows com WSL</div>
+  <div class="p-sub">Instala o MrBayes dentro do Ubuntu no WSL — recomendado para usar MPI e todos os núcleos</div>
+</label>
+
+      <div id="installLinksWin" style="margin-top:16px;">
+        <p><strong>Download direto (Windows):</strong> <a href="https://github.com/NBISweden/MrBayes/releases/download/v3.2.7/MrBayes-3.2.7-WIN.zip" target="_blank" rel="noopener">MrBayes-3.2.7-WIN.zip</a></p>
+        <p><strong>Página oficial de downloads:</strong> <a href="https://nbisweden.github.io/MrBayes/download" target="_blank" rel="noopener">nbisweden.github.io/MrBayes/download</a></p>
+      </div>
+
+      <div id="installLinksUnix" style="display:none; margin-top:16px;">
+        <p><strong>Download do código-fonte (Linux/macOS):</strong> <a href="https://github.com/NBISweden/MrBayes/releases/download/v3.2.7a/mrbayes-3.2.7a.tar.gz" target="_blank" rel="noopener">mrbayes-3.2.7a.tar.gz</a></p>
+        <p><strong>Instalação via apt (Ubuntu):</strong> <code>sudo apt install mrbayes</code></p>
+        <p><strong>Página oficial de downloads:</strong> <a href="https://nbisweden.github.io/MrBayes/download" target="_blank" rel="noopener">nbisweden.github.io/MrBayes/download</a></p>
+      </div>
+
+      <div id="installLinksWsl" style="display:none; margin-top:16px;">
+        <p><strong>Pré-requisito — instalar o WSL (uma vez só):</strong> abra o PowerShell como administrador e rode:</p>
+        <p><code>wsl --install</code></p>
+        <p>Reinicie a máquina se for pedido. Depois, dentro do Ubuntu (WSL), instale o MrBayes e o MrBayes-MPI:</p>
+        <p><code>sudo apt update &amp;&amp; sudo apt install -y mrbayes mrbayes-mpi</code></p>
+        <p><strong>Verifique:</strong> <code>mb -v</code> e <code>mpirun -np 4 mb-mpi -v</code>.</p>
+        <p><strong>Página oficial de downloads:</strong> <a href="https://nbisweden.github.io/MrBayes/download" target="_blank" rel="noopener">nbisweden.github.io/MrBayes/download</a></p>
+      </div>
+
+      <div style="margin-top:18px;">
+        <button class="btn-primary" id="btnDownloadInstallScript">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+          <span id="btnInstallScriptLabel">Baixar script de instalação (.bat)</span>
+        </button>
+      </div>
+    </div>
+  </section>
 
   <!-- STEP 1 -->
   <section class="step" id="stepUpload">
@@ -763,12 +813,16 @@ begin data;
           <div class="p-title">Ubuntu / Linux nativo</div>
           <div class="p-sub">MrBayes instalado direto no Ubuntu (ou macOS), sem MPI</div>
         </label>
-        <label class="pill" data-value="mpi">
-          <input type="radio" name="platform" value="mpi">
-          <div class="p-title">Ubuntu com MPI (WSL ou nativo)</div>
-          <div class="p-sub">mrbayes-mpi rodando as cadeias em paralelo</div>
-        </label>
-      </div>
+<label class="pill" data-value="mpi">
+  <input type="radio" name="platform" value="mpi">
+  <div class="p-title">Ubuntu com MPI (nativo)</div>
+  <div class="p-sub">mrbayes-mpi rodando as cadeias em paralelo</div>
+</label>
+<label class="pill" data-value="wsl">
+  <input type="radio" name="platform" value="wsl">
+  <div class="p-title">Windows com WSL (mais núcleos/threads)</div>
+  <div class="p-sub">Roda o MrBayes dentro do Ubuntu no WSL — usa todos os núcleos, com MPI opcional</div>
+</label>
 
       <div class="platform-extra" id="platformExtraWin">
         <div class="field">
@@ -803,6 +857,34 @@ begin data;
         </div>
       </div>
     </div>
+      <div class="platform-extra" id="platformExtraWsl" style="display:none;">
+        <p class="hint" style="margin:0 0 12px;">O WSL2 expõe todos os núcleos do seu processador ao Ubuntu — é a forma mais simples de sair do limite de threads do MrBayes nativo do Windows. Se o arquivo `.nex` estiver em uma pasta do Windows (ex: Downloads), você acessa de dentro do WSL por <code style="font-family:'IBM Plex Mono',monospace">/mnt/c/Users/seu_usuario/Downloads</code>.</p>
+
+        <div class="toggle-row" style="border-top:1px solid var(--rule); padding-top:12px;">
+          <div>
+            <div class="t-label">Usar MPI (paraleliza as cadeias entre núcleos)</div>
+            <div class="t-hint">Requer o pacote <code style="font-family:'IBM Plex Mono',monospace">mrbayes-mpi</code> instalado no WSL (<code style="font-family:'IBM Plex Mono',monospace">sudo apt install mrbayes-mpi</code>)</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="wslUseMpi" checked><span class="slider"></span></label>
+        </div>
+
+        <div class="field-grid" style="margin-top:14px;">
+          <div class="field">
+            <label for="execWsl">Executável no WSL</label>
+            <input type="text" id="execWsl" value="mb">
+            <div class="hint">Se instalou via <code style="font-family:'IBM Plex Mono',monospace">apt</code>, deixe <code style="font-family:'IBM Plex Mono',monospace">mb</code>. Se compilou o MPI manualmente, use <code style="font-family:'IBM Plex Mono',monospace">mb-mpi</code> ou o caminho do binário.</div>
+          </div>
+          <div class="field" id="wslMpirunField">
+            <label for="mpirunCmdWsl">Comando mpirun</label>
+            <input type="text" id="mpirunCmdWsl" value="mpirun">
+          </div>
+          <div class="field" id="wslNpField">
+            <label for="npCountWsl">Número de processos (-np)</label>
+            <input type="number" id="npCountWsl" value="8" min="1">
+            <div class="hint">Sugerido = nruns × nchains. Confira os núcleos disponíveis com <code style="font-family:'IBM Plex Mono',monospace">nproc</code> dentro do WSL.</div>
+          </div>
+        </div>
+      </div>
   </section>
 
   <!-- STEP 6 -->
@@ -1564,15 +1646,22 @@ begin data;
   }
 
   // wire up every control to refresh the preview live
-  ['dataKind','nstStructure','baseFreq','modelProtein','coding','rates','ngammacat','ngen','samplefreq','nruns','nchains','burninfrac','temp',
-   'useStoprule','useAutoclose','useLog','useSumm','outgroupSelect','outFilename',
-   'rateAC','rateAG','rateAT','rateCG','rateCT','rateGT',
-   'execWin','execUnix','execMpi','mpirunCmd','npCount']
+   ['dataKind','nstStructure','baseFreq','modelProtein','coding','rates','ngammacat','ngen','samplefreq','nruns','nchains','burninfrac','temp',
+    'useStoprule','useAutoclose','useLog','useSumm','outgroupSelect','outFilename',
+    'rateAC','rateAG','rateAT','rateCG','rateCT','rateGT',
+    'execWin','execUnix','execMpi','mpirunCmd','npCount',
+    'execWsl','mpirunCmdWsl','npCountWsl','wslUseMpi']
    .forEach(id => {
      const el = document.getElementById(id);
      el.addEventListener('input', updatePreview);
      el.addEventListener('change', updatePreview);
    });
+
+  // WSL: alternar campos de MPI e atualizar preview
+  document.getElementById('wslUseMpi').addEventListener('change', () => {
+    updateWslMpiVisibility();
+    updateRunbox();
+  });
 
   // ---------------- PLATFORM ----------------
   const platformInputs = document.querySelectorAll('input[name="platform"]');
@@ -1589,11 +1678,22 @@ begin data;
     document.getElementById('platformExtraWin').style.display = val === 'win' ? '' : 'none';
     document.getElementById('platformExtraUnix').style.display = val === 'unix' ? '' : 'none';
     document.getElementById('platformExtraMpi').style.display = val === 'mpi' ? '' : 'none';
+    document.getElementById('platformExtraWsl').style.display = val === 'wsl' ? '' : 'none';
+
     const label = document.getElementById('btnScriptLabel');
     label.textContent = val === 'win' ? 'Baixar script (.bat)'
       : val === 'unix' ? 'Baixar script (.sh)'
-      : 'Baixar script (.sh) com MPI';
+      : val === 'mpi' ? 'Baixar script (.sh) com MPI'
+      : 'Baixar script WSL (.sh)';
+
+    updateWslMpiVisibility();
     updateRunbox();
+  }
+
+  function updateWslMpiVisibility(){
+    const useMpi = document.getElementById('wslUseMpi').checked;
+    document.getElementById('wslMpirunField').style.display = useMpi ? '' : 'none';
+    document.getElementById('wslNpField').style.display = useMpi ? '' : 'none';
   }
 
   platformInputs.forEach(inp => inp.addEventListener('change', updatePlatformUI));
@@ -1601,7 +1701,9 @@ begin data;
   function updateNpSuggestion(){
     const nruns = parseInt(document.getElementById('nruns').value) || 2;
     const nchains = parseInt(document.getElementById('nchains').value) || 4;
-    document.getElementById('npCount').value = nruns * nchains;
+    const np = nruns * nchains;
+    document.getElementById('npCount').value = np;
+    document.getElementById('npCountWsl').value = np;
   }
   document.getElementById('nruns').addEventListener('input', updateNpSuggestion);
   document.getElementById('nchains').addEventListener('input', updateNpSuggestion);
@@ -1616,6 +1718,7 @@ begin data;
     const title = document.getElementById('runboxTitle');
     const box = document.getElementById('runboxText');
     const fname = outputFilename();
+
     if (val === 'win'){
       const exe = document.getElementById('execWin').value.trim() || 'mb.exe';
       title.textContent = 'Como iniciar no Windows';
@@ -1624,12 +1727,25 @@ begin data;
       const exe = document.getElementById('execUnix').value.trim() || 'mb';
       title.textContent = 'Como iniciar no Ubuntu/Linux';
       box.innerHTML = `Abra o terminal na pasta onde salvou o arquivo e rode: <code>${escapeHtml(exe)} ${escapeHtml(fname)}</code>. A MCMC começa sozinha — não é preciso digitar mais nada.`;
-    } else {
+    } else if (val === 'mpi'){
       const exe = document.getElementById('execMpi').value.trim() || 'mb';
       const mpirun = document.getElementById('mpirunCmd').value.trim() || 'mpirun';
       const np = document.getElementById('npCount').value || '8';
       title.textContent = 'Como iniciar no Ubuntu com MPI';
-      box.innerHTML = `Abra o terminal do Ubuntu (dentro do WSL, se for o seu caso, entre na pasta do Windows com algo como <code>cd /mnt/c/Users/seu_usuario/pasta</code>) e rode: <code>${escapeHtml(mpirun)} -np ${escapeHtml(np)} ${escapeHtml(exe)} ${escapeHtml(fname)}</code>. Ou use o script pronto abaixo.`;
+      box.innerHTML = `Abra o terminal do Ubuntu e rode: <code>${escapeHtml(mpirun)} -np ${escapeHtml(np)} ${escapeHtml(exe)} ${escapeHtml(fname)}</code>. Ou use o script pronto abaixo.`;
+    } else {
+      // WSL
+      const useMpi = document.getElementById('wslUseMpi').checked;
+      const exe = document.getElementById('execWsl').value.trim() || 'mb';
+      title.textContent = 'Como iniciar pelo WSL (Windows Subsystem for Linux)';
+      const pathHint = `Se o arquivo estiver em uma pasta do Windows (ex: Downloads), entre nela pelo WSL com <code>cd /mnt/c/Users/seu_usuario/Downloads</code>.`;
+      if (useMpi){
+        const mpirun = document.getElementById('mpirunCmdWsl').value.trim() || 'mpirun';
+        const np = document.getElementById('npCountWsl').value || '8';
+        box.innerHTML = `${pathHint} Depois rode: <code>${escapeHtml(mpirun)} -np ${escapeHtml(np)} ${escapeHtml(exe)} "${escapeHtml(fname)}"</code>. Para conferir os núcleos disponíveis, use <code>nproc</code>.`;
+      } else {
+        box.innerHTML = `${pathHint} Depois rode: <code>${escapeHtml(exe)} "${escapeHtml(fname)}"</code>.`;
+      }
     }
   }
 
@@ -1660,12 +1776,33 @@ begin data;
       const exe = document.getElementById('execUnix').value.trim() || 'mb';
       content = `#!/bin/bash\nset -e\ncd "$(dirname "$0")"\n${exe} "${fname}"\n`;
       outName = 'rodar_analise.sh';
-    } else {
+    } else if (val === 'mpi'){
       const exe = document.getElementById('execMpi').value.trim() || 'mb';
       const mpirun = document.getElementById('mpirunCmd').value.trim() || 'mpirun';
       const np = document.getElementById('npCount').value || '8';
       content = `#!/bin/bash\nset -e\ncd "$(dirname "$0")"\n${mpirun} -np ${np} ${exe} "${fname}"\n`;
       outName = 'rodar_analise_mpi.sh';
+    } else {
+      // WSL
+      const useMpi = document.getElementById('wslUseMpi').checked;
+      const exe = document.getElementById('execWsl').value.trim() || 'mb';
+      if (useMpi){
+        const mpirun = document.getElementById('mpirunCmdWsl').value.trim() || 'mpirun';
+        const np = document.getElementById('npCountWsl').value || '8';
+        content = `#!/bin/bash\n` +
+          `set -e\n` +
+          `# Rode este script dentro do WSL (Ubuntu), na pasta do arquivo .nex\n` +
+          `# Se o arquivo estiver no Windows, copie/mova para dentro do WSL ou acesse via /mnt/c/...\n` +
+          `cd "$(dirname "$0")"\n` +
+          `${mpirun} -np ${np} ${exe} "${fname}"\n`;
+        outName = 'rodar_analise_wsl_mpi.sh';
+      } else {
+        content = `#!/bin/bash\n` +
+          `set -e\n` +
+          `cd "$(dirname "$0")"\n` +
+          `${exe} "${fname}"\n`;
+        outName = 'rodar_analise_wsl.sh';
+      }
     }
 
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
@@ -1675,6 +1812,93 @@ begin data;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
   });
+
+  // ---------------- INSTALL SCRIPT GENERATION ----------------
+  function currentInstallPlatform(){
+    return document.querySelector('input[name="installPlatform"]:checked').value;
+  }
+
+  function updateInstallUI(){
+    const val = currentInstallPlatform();
+    document.querySelectorAll('#installPlatformGroup .pill').forEach(p => {
+      p.classList.toggle('active', p.dataset.value === val);
+    });
+    document.getElementById('installLinksWin').style.display = val === 'win' ? '' : 'none';
+    document.getElementById('installLinksUnix').style.display = val === 'unix' ? '' : 'none';
+    document.getElementById('installLinksWsl').style.display = val === 'wsl' ? '' : 'none';
+    const label = document.getElementById('btnInstallScriptLabel');
+    label.textContent = val === 'win' ? 'Baixar script de instalação (.bat)' : 'Baixar script de instalação (.sh)';
+  }
+
+  document.querySelectorAll('input[name="installPlatform"]').forEach(inp => {
+    inp.addEventListener('change', updateInstallUI);
+  });
+
+  document.getElementById('btnDownloadInstallScript').addEventListener('click', () => {
+    const val = currentInstallPlatform();
+    let content, outName;
+
+    if (val === 'win'){
+      const mbUrl = 'https://github.com/NBISweden/MrBayes/releases/download/v3.2.7/MrBayes-3.2.7-WIN.zip';
+      content = `@echo off\r\n` +
+        `set MB_URL=${mbUrl}\r\n` +
+        `set MB_DIR=%USERPROFILE%\\MrBayes\r\n` +
+        `if not exist "%MB_DIR%" mkdir "%MB_DIR%"\r\n` +
+        `echo Baixando MrBayes...\r\n` +
+        `powershell -Command "Invoke-WebRequest -Uri '%MB_URL%' -OutFile '%MB_DIR%\\MrBayes.zip'"\r\n` +
+        `echo Extraindo...\r\n` +
+        `powershell -Command "Expand-Archive -Path '%MB_DIR%\\MrBayes.zip' -DestinationPath '%MB_DIR%' -Force"\r\n` +
+        `echo.\r\n` +
+        `echo Pronto! O executavel esta em: %MB_DIR%\\MrBayes\\mrbayes_x64.exe\r\n` +
+        `echo Adicione %MB_DIR%\\MrBayes ao PATH se desejar.\r\n` +
+        `pause\r\n`;
+      outName = 'instalar_mrbayes.bat';
+    } else if (val === 'unix'){
+      const mbVersion = '3.2.7a';
+      const mbUrl = `https://github.com/NBISweden/MrBayes/releases/download/v${mbVersion}/mrbayes-${mbVersion}.tar.gz`;
+      content = `#!/bin/bash\n` +
+        `set -e\n` +
+        `MB_VERSION=${mbVersion}\n` +
+        `MB_URL="${mbUrl}"\n` +
+        `MB_DIR="$HOME/MrBayes"\n` +
+        `mkdir -p "$MB_DIR"\n` +
+        `cd "$MB_DIR"\n` +
+        `echo "Baixando MrBayes..."\n` +
+        `wget "$MB_URL" -O mrbayes.tar.gz\n` +
+        `tar -xzf mrbayes.tar.gz\n` +
+        `cd mrbayes-${mbVersion}\n` +
+        `echo "Compilando..."\n` +
+        `./configure --disable-sse\n` +
+        `make\n` +
+        `sudo make install\n` +
+        `echo "MrBayes instalado com sucesso!"\n`;
+      outName = 'instalar_mrbayes.sh';
+    } else {
+      // WSL
+      content = `#!/bin/bash\n` +
+        `set -e\n` +
+        `echo "==> Atualizando repositorios do Ubuntu (WSL)..."\n` +
+        `sudo apt update\n` +
+        `echo "==> Instalando MrBayes e MrBayes-MPI..."\n` +
+        `sudo apt install -y mrbayes mrbayes-mpi\n` +
+        `echo "==> Verificando instalacao..."\n` +
+        `mb -v || true\n` +
+        `mpirun -np 4 mb-mpi -v || true\n` +
+        `echo ""\n` +
+        `echo "Pronto! Núcleos disponíveis nesta maquina (WSL): $(nproc)"\n`;
+      outName = 'instalar_mrbayes_wsl.sh';
+    }
+
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = outName;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  // Inicializar UI de instalação
+  updateInstallUI();
 
   // ---------------- INIT ----------------
   updateNpSuggestion();
