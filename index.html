@@ -489,10 +489,159 @@
 
   footer{
     text-align:center;
-    padding:36px 24px 10px;
+    padding:40px 24px 28px;
     font-size:12.5px;
     color:var(--ink-soft);
     font-family:'IBM Plex Mono', monospace;
+  }
+
+
+  /* ---------- APP TABS ---------- */
+  .app-tabs-wrap{
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+  .app-tabs{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    padding:18px 0 0;
+    border-bottom:1px solid var(--rule);
+  }
+  .app-tab{
+    appearance:none;
+    border:1px solid transparent;
+    border-bottom:none;
+    background:transparent;
+    color:var(--ink-soft);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    font-weight:600;
+    padding:11px 14px;
+    border-radius:8px 8px 0 0;
+    cursor:pointer;
+    transition:.15s ease;
+  }
+  .app-tab:hover{ background:var(--paper-alt); color:var(--ink); }
+  .app-tab.active{
+    color:var(--moss-dark);
+    background:#fff;
+    border-color:var(--rule);
+    position:relative;
+    top:1px;
+  }
+  .tab-panel{ display:none; }
+  .tab-panel.active{ display:block; }
+
+  /* ---------- AUXILIARY TOOL PANELS ---------- */
+  .tool-intro{
+    margin:0 0 22px;
+    color:var(--ink-soft);
+    max-width:700px;
+  }
+  .tool-card{
+    border:1px solid var(--rule);
+    border-radius:var(--radius);
+    background:#fff;
+    padding:20px;
+    margin-bottom:18px;
+    box-shadow:var(--shadow);
+  }
+  .tool-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+  }
+  .tool-grid .field.full{ grid-column:1 / -1; }
+  .tool-note{
+    margin-top:12px;
+    padding:12px 14px;
+    border-radius:8px;
+    background:var(--paper-alt);
+    border:1px solid var(--rule);
+    color:var(--ink-soft);
+    font-size:12.5px;
+  }
+  .tool-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:16px;
+  }
+  .btn-secondary{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    font-weight:600;
+    background:#fff;
+    color:var(--ink);
+    border:1px solid var(--rule);
+    padding:11px 17px;
+    border-radius:8px;
+    cursor:pointer;
+  }
+  .btn-secondary:hover{ border-color:var(--moss); background:var(--ok-bg); }
+  .btn-secondary:disabled{ color:var(--ink-soft); cursor:not-allowed; opacity:.6; }
+  .tool-output{
+    margin-top:18px;
+    border:1px solid var(--ink);
+    border-radius:var(--radius);
+    overflow:hidden;
+    background:var(--code-bg);
+  }
+  .tool-output-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    padding:11px 14px;
+    background:#0F1913;
+    color:var(--code-accent);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+  }
+  .tool-output pre{
+    margin:0;
+    padding:16px 18px;
+    color:var(--code-fg);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    line-height:1.6;
+    white-space:pre-wrap;
+    overflow:auto;
+    max-height:420px;
+  }
+  .tool-report{
+    display:none;
+    margin-top:14px;
+    border:1px solid var(--rule);
+    border-radius:8px;
+    background:var(--ok-bg);
+    padding:12px 14px;
+    font-size:13px;
+  }
+  .tool-report.show{ display:block; }
+  .status-ok{ color:var(--moss-dark); font-weight:600; }
+  .status-warn{ color:var(--amber-dark); font-weight:600; }
+  .mono{ font-family:'IBM Plex Mono', monospace; }
+  .dropzone.compact{ padding:24px 18px; }
+  .tool-tabs-hint{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    margin-top:8px;
+  }
+  @media (max-width:760px){
+    .tool-grid{ grid-template-columns:1fr; }
+    .tool-grid .field.full{ grid-column:auto; }
+  }
+  @media (max-width:640px){
+    .app-tabs-wrap{ padding:0 12px; }
+    .app-tabs{ overflow-x:auto; flex-wrap:nowrap; scrollbar-width:thin; }
+    .app-tab{ white-space:nowrap; }
+    .tool-card{ padding:15px; }
   }
 
   .badge-empty{ color:var(--ink-soft); font-style:italic; }
@@ -502,16 +651,27 @@
 
 <header class="hero">
   <div class="hero-inner">
-    <div class="eyebrow">Ferramenta local · roda no navegador · nada é enviado a servidores</div>
-    <h1>Monte sua análise no <em>MrBayes</em> sem escrever uma linha de comando.</h1>
-    <p class="lead">Carregue o arquivo <code>.nex</code> exportado do MEGA ou DnaSP6, ajuste o modelo e os parâmetros da MCMC num formulário simples, e baixe um arquivo já pronto para rodar — a página também limpa automaticamente os caracteres estranhos que esses programas costumam deixar no arquivo.</p>
+    <div class="eyebrow">Suite local · processamento no navegador · seus dados ficam no seu computador</div>
+    <h1>Ferramentas para <em>MrBayes</em>, IQ-TREE e árvores.</h1>
+    <p class="lead">Configure análises Bayesianas e de máxima verossimilhança, prepare scripts de execução e converta arquivos de árvore sem enviar seus dados para um servidor.</p>
     <div class="hero-meta">
-      <span>Limpeza automática do NEXUS</span>
-      <span>Detecção de táxons e partições</span>
-      <span>Arquivo final pronto para <code>mb</code></span>
+      <span>MrBayes + IQ-TREE</span>
+      <span>Execução local por script</span>
+      <span>Conversão .tre → Newick</span>
     </div>
   </div>
 </header>
+
+<div class="app-tabs-wrap">
+  <nav class="app-tabs" id="appTabs" aria-label="Ferramentas filogenéticas">
+    <button class="app-tab active" type="button" data-tab="bayes">Gerar MrBayes</button>
+    <button class="app-tab" type="button" data-tab="runner">Rodar MrBayes</button>
+    <button class="app-tab" type="button" data-tab="iqtree">Gerar IQ-TREE</button>
+    <button class="app-tab" type="button" data-tab="newick">.tre → Newick</button>
+  </nav>
+</div>
+
+<section class="tab-panel active" id="tab-bayes">
 
 <div class="wrap">
   <!-- STEP 0: INSTALL -->
@@ -824,6 +984,22 @@ begin data;
   <div class="p-sub">Roda o MrBayes dentro do Ubuntu no WSL — usa todos os núcleos, com MPI opcional</div>
 </label>
 
+      <div class="platform-extra" id="platformExtraWin">
+        <div class="field">
+          <label for="execWin">Executável MrBayes (Windows)</label>
+          <input type="text" id="execWin" value="mb.exe">
+          <div class="hint">Se o executável tiver outro nome/caminho, informe aqui.</div>
+        </div>
+      </div>
+
+      <div class="platform-extra" id="platformExtraUnix" style="display:none;">
+        <div class="field">
+          <label for="execUnix">Executável MrBayes (Linux/macOS)</label>
+          <input type="text" id="execUnix" value="mb">
+          <div class="hint">Normalmente <code>mb</code> quando o MrBayes está no PATH.</div>
+        </div>
+      </div>
+
       <div class="platform-extra" id="platformExtraMpi" style="display:none;">
         <div class="field-grid">
           <div class="field">
@@ -909,8 +1085,288 @@ begin data;
   </section>
 
 </div>
+</section>
 
-<footer>gerador de análises mrbayes · processamento 100% local no navegador</footer>
+<!-- TAB: RUN MRBAYES -->
+<section class="tab-panel" id="tab-runner">
+  <div class="wrap">
+    <section class="step">
+      <div class="step-head"><div class="step-num">01</div><h2>Rodar um arquivo MrBayes</h2></div>
+      <p class="step-desc">Escolha um arquivo <code>.nex</code>/<code>.nexus</code> já pronto e gere o comando ou script de execução adequado ao seu sistema.</p>
+      <div class="step-body">
+        <p class="tool-intro">
+          O navegador não pode iniciar diretamente um executável local como <code>mb.exe</code> por motivos de segurança.
+          Esta aba faz a parte segura e reproduzível: prepara o comando, gera um script de 1 clique e deixa tudo pronto para a execução local.
+        </p>
+
+        <div class="tool-card">
+          <div class="field full">
+            <label>Arquivo NEXUS</label>
+            <div class="dropzone compact" id="runnerDropzone" tabindex="0">
+              <div class="dz-title">Arraste o arquivo .nex/.nexus aqui</div>
+              <div class="dz-sub">ou clique para escolher do computador</div>
+              <input type="file" id="runnerFile" accept=".nex,.nexus,.txt">
+            </div>
+            <div class="tool-tabs-hint" id="runnerFileName">Nenhum arquivo carregado.</div>
+          </div>
+
+          <div class="tool-grid" style="margin-top:16px;">
+            <div class="field">
+              <label for="runnerPlatform">Sistema de execução</label>
+              <select id="runnerPlatform">
+                <option value="win" selected>Windows — .bat</option>
+                <option value="wsl">Windows + WSL2 — .bat inteligente</option>
+                <option value="unix">Linux / macOS — .sh</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="runnerExe">Executável MrBayes</label>
+              <input type="text" id="runnerExe" value="mb.exe">
+              <div class="hint">No Linux/macOS, use <code>mb</code>. No WSL, normalmente <code>mb</code>.</div>
+            </div>
+            <div class="field">
+              <label for="runnerMpi">Usar MPI no WSL</label>
+              <select id="runnerMpi">
+                <option value="no" selected>Não</option>
+                <option value="yes">Sim</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="runnerNp">Processos MPI no WSL</label>
+              <input type="number" id="runnerNp" value="4" min="1" step="1">
+            </div>
+          </div>
+
+          <div class="tool-actions">
+            <button class="btn-primary" id="btnRunnerScript" disabled>Baixar script de execução</button>
+            <button class="btn-secondary" id="btnRunnerCommand" disabled>Copiar comando</button>
+          </div>
+
+          <div class="tool-report" id="runnerReport"></div>
+
+          <div class="tool-output" id="runnerOutput" style="display:none;">
+            <div class="tool-output-head"><span>Comando</span><span id="runnerOutputLabel">MrBayes</span></div>
+            <pre id="runnerCommandPreview"></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="step">
+      <div class="step-head"><div class="step-num">02</div><h2>Fluxo recomendado</h2></div>
+      <p class="step-desc">Na prática, o fluxo fica em três arquivos: o NEXUS, o script e os resultados gerados pelo MrBayes.</p>
+      <div class="step-body">
+        <div class="tool-card">
+          <div class="tool-grid">
+            <div>
+              <strong>1. Arquivo de entrada</strong>
+              <p class="hint">Coloque o <code>.nex</code> na mesma pasta do script baixado.</p>
+            </div>
+            <div>
+              <strong>2. Execução</strong>
+              <p class="hint">Dê duplo clique no <code>.bat</code> no Windows ou execute o <code>.sh</code> no Linux/macOS.</p>
+            </div>
+            <div>
+              <strong>3. Resultados</strong>
+              <p class="hint">O MrBayes gera, entre outros, arquivos de parâmetros, árvores e log na pasta da análise.</p>
+            </div>
+            <div>
+              <strong>4. Árvore</strong>
+              <p class="hint">Use a aba <strong>.tre → Newick</strong> para converter uma árvore NEXUS/`.tre` em Newick simples.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</section>
+
+<!-- TAB: IQ-TREE -->
+<section class="tab-panel" id="tab-iqtree">
+  <div class="wrap">
+    <section class="step">
+      <div class="step-head"><div class="step-num">01</div><h2>Gerar uma análise IQ-TREE</h2></div>
+      <p class="step-desc">Carregue um alinhamento e gere o comando/script para IQ-TREE 2 com seleção automática de modelo, SH-aLRT, UFBoot e controle de CPU.</p>
+      <div class="step-body">
+        <div class="tool-card">
+          <div class="dropzone compact" id="iqDropzone" tabindex="0">
+            <div class="dz-title">Arraste FASTA, PHYLIP, NEXUS ou outro alinhamento aqui</div>
+            <div class="dz-sub">ou clique para escolher do computador</div>
+            <input type="file" id="iqFile" accept=".fasta,.fa,.fas,.fna,.faa,.phy,.phylip,.nex,.nexus,.aln,.txt">
+          </div>
+          <div class="tool-tabs-hint" id="iqFileName">Nenhum alinhamento carregado.</div>
+
+          <div class="tool-grid" style="margin-top:18px;">
+            <div class="field">
+              <label for="iqDataType">Tipo de dados</label>
+              <select id="iqDataType">
+                <option value="auto" selected>Automático</option>
+                <option value="DNA">DNA</option>
+                <option value="AA">Proteína (AA)</option>
+                <option value="BIN">Binário</option>
+                <option value="MORPH">Morfológico</option>
+                <option value="CODON">Codon</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="iqModel">Seleção de modelo</label>
+              <select id="iqModel">
+                <option value="MFP" selected>MFP — ModelFinder + árvore ML</option>
+                <option value="MF">MF — ModelFinder sem árvore final</option>
+                <option value="GTR+G">GTR+G</option>
+                <option value="HKY+G">HKY+G</option>
+                <option value="LG+G">LG+G (proteína)</option>
+                <option value="WAG+G">WAG+G (proteína)</option>
+              </select>
+              <div class="hint">MFP é a opção geral para seleção automática de modelo.</div>
+            </div>
+            <div class="field">
+              <label for="iqBootstrap">UFBoot (replicações)</label>
+              <input type="number" id="iqBootstrap" value="1000" min="0" step="100">
+              <div class="hint">Use 0 para não gerar UFBoot.</div>
+            </div>
+            <div class="field">
+              <label for="iqAlrt">SH-aLRT (replicações)</label>
+              <input type="number" id="iqAlrt" value="1000" min="0" step="100">
+              <div class="hint">Use 0 para desativar.</div>
+            </div>
+            <div class="field">
+              <label for="iqThreads">Threads</label>
+              <select id="iqThreads">
+                <option value="AUTO" selected>AUTO</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="4">4</option>
+                <option value="8">8</option>
+                <option value="16">16</option>
+                <option value="32">32</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="iqNtMax">Limite máximo de threads</label>
+              <input type="number" id="iqNtMax" value="" min="1" step="1" placeholder="Sem limite">
+              <div class="hint">Usado somente quando Threads = AUTO.</div>
+            </div>
+            <div class="field">
+              <label for="iqPrefix">Prefixo da análise</label>
+              <input type="text" id="iqPrefix" placeholder="preenchido pelo arquivo">
+            </div>
+            <div class="field">
+              <label for="iqExecutable">Executável</label>
+              <input type="text" id="iqExecutable" value="iqtree2">
+              <div class="hint">Para versões antigas, pode usar <code>iqtree</code>.</div>
+            </div>
+            <div class="field full">
+              <label for="iqOutgroup">Outgroup (opcional)</label>
+              <input type="text" id="iqOutgroup" placeholder="Ex.: Taxon_A,Taxon_B">
+              <div class="hint">Os nomes devem existir exatamente no alinhamento. O valor será passado a <code>-o</code>.</div>
+            </div>
+            <div class="field">
+              <label for="iqPartitionMode">Partições</label>
+              <select id="iqPartitionMode">
+                <option value="none" selected>Sem arquivo de partição</option>
+                <option value="p">-p — modelo por partição</option>
+                <option value="spp">-spp — edge-linked proportional</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="iqPartitionFile">Arquivo de partição (opcional)</label>
+              <input type="file" id="iqPartitionFile" accept=".nex,.nexus,.txt,.part,.partitions">
+              <div class="hint" id="iqPartitionName">Nenhum arquivo de partição selecionado.</div>
+            </div>
+          </div>
+
+          <div class="tool-actions">
+            <button class="btn-primary" id="btnIqBat" disabled>Baixar script Windows (.bat)</button>
+            <button class="btn-secondary" id="btnIqSh" disabled>Baixar script Linux/macOS (.sh)</button>
+            <button class="btn-secondary" id="btnIqCopy" disabled>Copiar comando</button>
+          </div>
+
+          <div class="tool-report" id="iqReport"></div>
+
+          <div class="tool-output">
+            <div class="tool-output-head"><span>Comando IQ-TREE 2</span><span>execução local</span></div>
+            <pre id="iqCommandPreview">Carregue um alinhamento para montar o comando.</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="step">
+      <div class="step-head"><div class="step-num">02</div><h2>O que será gerado</h2></div>
+      <p class="step-desc">A análise é executada localmente pelo IQ-TREE. Esta aba apenas monta os parâmetros de forma reproduzível.</p>
+      <div class="step-body">
+        <div class="tool-card">
+          <div class="tool-grid">
+            <div><strong>Entrada</strong><p class="hint">FASTA, PHYLIP, NEXUS, CLUSTAL ou MSF, conforme suporte do IQ-TREE.</p></div>
+            <div><strong>Modelo</strong><p class="hint">MFP pode selecionar automaticamente um modelo apropriado antes da reconstrução da árvore.</p></div>
+            <div><strong>Suporte</strong><p class="hint">UFBoot e SH-aLRT são opcionais e configuráveis.</p></div>
+            <div><strong>CPU</strong><p class="hint">AUTO pode selecionar automaticamente um número adequado de threads; <code>-ntmax</code> pode limitar esse valor.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</section>
+
+<!-- TAB: TRE -> NEWICK -->
+<section class="tab-panel" id="tab-newick">
+  <div class="wrap">
+    <section class="step">
+      <div class="step-head"><div class="step-num">01</div><h2>Transformar .tre em Newick</h2></div>
+      <p class="step-desc">Aceita árvores Newick simples e arquivos NEXUS/`.tre` do MrBayes, incluindo blocos <code>TRANSLATE</code> para recuperar os nomes dos táxons.</p>
+      <div class="step-body">
+        <div class="tool-card">
+          <div class="dropzone compact" id="newickDropzone" tabindex="0">
+            <div class="dz-title">Arraste o arquivo .tre/.tree/.nex/.nexus aqui</div>
+            <div class="dz-sub">ou clique para escolher do computador</div>
+            <input type="file" id="newickFile" accept=".tre,.tree,.trees,.nex,.nexus,.txt">
+          </div>
+          <div class="tool-tabs-hint" id="newickFileName">Nenhum arquivo carregado.</div>
+
+          <div class="field" style="margin-top:16px;">
+            <label for="newickPaste">Ou cole a árvore</label>
+            <textarea id="newickPaste" style="min-height:160px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; padding:14px; border:1px solid var(--rule); border-radius:var(--radius); background:#fff;" placeholder="(Taxon_A:0.1,(Taxon_B:0.2,Taxon_C:0.3):0.4);"></textarea>
+          </div>
+
+          <div class="tool-grid" style="margin-top:16px;">
+            <div class="field">
+              <label for="newickStripComments">Comentários/atributos</label>
+              <select id="newickStripComments">
+                <option value="yes" selected>Remover [ ... ] (Newick limpo)</option>
+                <option value="no">Manter comentários</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="newickReplaceTranslate">TRANSLATE</label>
+              <select id="newickReplaceTranslate">
+                <option value="yes" selected>Substituir números pelos nomes</option>
+                <option value="no">Manter números</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="tool-actions">
+            <button class="btn-primary" id="btnNewickConvert">Converter para Newick</button>
+            <button class="btn-secondary" id="btnNewickDownload" disabled>Baixar .nwk</button>
+            <button class="btn-secondary" id="btnNewickCopy" disabled>Copiar Newick</button>
+          </div>
+
+          <div class="tool-report" id="newickReport"></div>
+
+          <div class="tool-output">
+            <div class="tool-output-head"><span>Newick de saída</span><span id="newickTreeCount">0 árvore(s)</span></div>
+            <pre id="newickPreview">A saída aparecerá aqui.</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</section>
+
+<footer>
+  Gerado por IA · Gerenciado por <a href="mailto:vinicius.baggio@ufrgs.br">Vinícius Baggio de Souza</a>
+</footer>
 
 <script>
 (function(){
@@ -1720,38 +2176,15 @@ begin data;
       title.textContent = 'Como iniciar no Ubuntu com MPI';
       box.innerHTML = `No terminal do Ubuntu, rode <code>${escapeHtml(mpirun)} -np ${escapeHtml(np)} ${escapeHtml(exe)} ${escapeHtml(fname)}</code> — ou use o <code>rodar_analise_mpi.sh</code> baixado.`;
     } else {
-      // WSL: .bat que chama wsl.exe para instalar via apt
-      content =
-        `@echo off\r\n` +
-        `chcp 65001 >nul\r\n` +
-        `echo ============================================================\r\n` +
-        `echo   Instalando MrBayes e MrBayes-MPI dentro do WSL\r\n` +
-        `echo ============================================================\r\n` +
-        `echo.\r\n` +
-        `\r\n` +
-        `where wsl >nul 2>nul\r\n` +
-        `if errorlevel 1 (\r\n` +
-        `  echo [ERRO] WSL nao encontrado.\r\n` +
-        `  echo Abra o PowerShell como administrador e rode:  wsl --install\r\n` +
-        `  pause\r\n` +
-        `  exit /b 1\r\n` +
-        `)\r\n` +
-        `\r\n` +
-        `echo Sera pedida sua senha de usuario do Ubuntu.\r\n` +
-        `echo.\r\n` +
-        `wsl.exe --exec sudo apt update\r\n` +
-        `wsl.exe --exec sudo apt install -y mrbayes mrbayes-mpi\r\n` +
-        `\r\n` +
-        `echo.\r\n` +
-        `echo Verificando instalacao...\r\n` +
-        `wsl.exe --exec mb -v\r\n` +
-        `wsl.exe --exec sh -c "nproc"\r\n` +
-        `\r\n` +
-        `echo.\r\n` +
-        `echo Pronto! O MrBayes esta instalado no WSL.\r\n` +
-        `pause\r\n`;
-      outName = 'instalar_mrbayes_wsl.bat';
+      const useMpi = document.getElementById('wslUseMpi').checked;
+      const np = document.getElementById('npCountWsl').value || '8';
+      const exe = document.getElementById('execWsl').value.trim() || 'mb';
+      title.textContent = 'Como iniciar no Windows com WSL';
+      box.innerHTML = useMpi
+        ? `O <code>.bat</code> baixado entra na pasta correta, verifica o WSL/MrBayes e executa <code>mpirun -np ${escapeHtml(np)} ${escapeHtml(exe)} ${escapeHtml(fname)}</code>.`
+        : `O <code>.bat</code> baixado entra na pasta correta e executa <code>${escapeHtml(exe)} ${escapeHtml(fname)}</code> dentro do WSL.`;
     }
+  }
 
   // ---------------- DOWNLOAD ----------------
   document.getElementById('btnDownload').addEventListener('click', () => {
@@ -1943,6 +2376,7 @@ begin data;
     label.textContent = val === 'win' ? 'Baixar script de instalação (.bat)'
       : val === 'unix' ? 'Baixar script de instalação (.sh)'
       : 'Baixar instalador (.bat que chama o WSL)';
+  }
 
   document.querySelectorAll('input[name="installPlatform"]').forEach(inp => {
     inp.addEventListener('change', updateInstallUI);
@@ -2013,6 +2447,544 @@ begin data;
 
   // Inicializar UI de instalação
   updateInstallUI();
+
+
+  // ---------------- APP TABS ----------------
+  const appTabs = document.querySelectorAll('.app-tab');
+  const tabPanels = document.querySelectorAll('.tab-panel');
+
+  appTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.dataset.tab;
+      appTabs.forEach(t => t.classList.toggle('active', t === tab));
+      tabPanels.forEach(panel => panel.classList.toggle('active', panel.id === 'tab-' + target));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+
+  function downloadTextFile(filename, content, type='text/plain;charset=utf-8'){
+    const blob = new Blob([content], {type});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function baseName(filename){
+    return (filename || 'analise').replace(/\.[^.]+$/, '');
+  }
+
+  function readTextFile(file){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ''));
+      reader.onerror = () => reject(reader.error || new Error('Não foi possível ler o arquivo.'));
+      reader.readAsText(file);
+    });
+  }
+
+  function wireDropzone(zoneId, inputId, onFile){
+    const zone = document.getElementById(zoneId);
+    const input = document.getElementById(inputId);
+    if (!zone || !input) return;
+    zone.addEventListener('click', () => input.click());
+    zone.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        input.click();
+      }
+    });
+    ['dragenter','dragover'].forEach(ev => zone.addEventListener(ev, e => {
+      e.preventDefault();
+      zone.classList.add('drag');
+    }));
+    ['dragleave','drop'].forEach(ev => zone.addEventListener(ev, e => {
+      e.preventDefault();
+      zone.classList.remove('drag');
+    }));
+    zone.addEventListener('drop', e => {
+      const file = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (file) onFile(file);
+    });
+    input.addEventListener('change', () => {
+      if (input.files && input.files[0]) onFile(input.files[0]);
+    });
+  }
+
+  async function copyText(text){
+    try{
+      await navigator.clipboard.writeText(text);
+      return true;
+    }catch(err){
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position='fixed';
+      ta.style.opacity='0';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    }
+  }
+
+  // ---------------- MRBAYES RUNNER TAB ----------------
+  const runnerState = { file:null, text:'' };
+
+  function getRunnerFileName(){
+    return runnerState.file ? runnerState.file.name : 'analise_mrbayes.nex';
+  }
+
+  function updateRunnerCommand(){
+    const btn = document.getElementById('btnRunnerScript');
+    const btnCopy = document.getElementById('btnRunnerCommand');
+    const output = document.getElementById('runnerOutput');
+    const preview = document.getElementById('runnerCommandPreview');
+    const platform = document.getElementById('runnerPlatform').value;
+    const exe = document.getElementById('runnerExe').value.trim() || (platform === 'win' ? 'mb.exe' : 'mb');
+    const fname = getRunnerFileName();
+    const useMpi = document.getElementById('runnerMpi').value === 'yes';
+    const np = parseInt(document.getElementById('runnerNp').value,10) || 4;
+
+    let command = '';
+    if (platform === 'win'){
+      command = `${exe} "${fname}"`;
+    } else if (platform === 'unix'){
+      command = `${exe} "${fname}"`;
+    } else if (useMpi){
+      command = `mpirun -np ${np} ${exe} "${fname}"`;
+    } else {
+      command = `wsl.exe --cd "%CD%" ${exe} "${fname}"`;
+    }
+
+    preview.textContent = command;
+    output.style.display = runnerState.file ? 'block' : 'none';
+    btn.disabled = !runnerState.file;
+    btnCopy.disabled = !runnerState.file;
+
+    if (runnerState.file){
+      const report = document.getElementById('runnerReport');
+      report.classList.add('show');
+      report.innerHTML = `<span class="status-ok">Arquivo carregado:</span> ${escapeHtml(fname)} — ${runnerState.text.length.toLocaleString('pt-BR')} caracteres.`;
+    }
+    return {platform, exe, fname, useMpi, np, command};
+  }
+
+  function buildRunnerScript(){
+    const cfg = updateRunnerCommand();
+    if (cfg.platform === 'win'){
+      return {
+        filename:'rodar_mrbayes.bat',
+        content:[
+          '@echo off',
+          'setlocal',
+          'cd /d "%~dp0"',
+          `if not exist "${cfg.fname}" (`,
+          `  echo [ERRO] Arquivo "${cfg.fname}" nao encontrado nesta pasta.`,
+          '  pause',
+          '  exit /b 1',
+          ')',
+          '',
+          `echo Iniciando MrBayes...`,
+          `${cfg.exe} "${cfg.fname}"`,
+          'set "EXITCODE=%ERRORLEVEL%"',
+          'echo.',
+          'if not "%EXITCODE%"=="0" echo [ERRO] MrBayes terminou com codigo %EXITCODE%.',
+          'if "%EXITCODE%"=="0" echo Analise concluida.',
+          'pause',
+          'endlocal',
+          ''
+        ].join('\r\n')
+      };
+    }
+    if (cfg.platform === 'unix'){
+      return {
+        filename:'rodar_mrbayes.sh',
+        content:[
+          '#!/bin/bash',
+          'set -e',
+          'cd "$(dirname "$0")"',
+          `if [ ! -f "${cfg.fname}" ]; then echo "Arquivo ${cfg.fname} nao encontrado."; exit 1; fi`,
+          `${cfg.exe} "${cfg.fname}"`,
+          ''
+        ].join('\n')
+      };
+    }
+    const mpiLine = cfg.useMpi
+      ? `wsl.exe --cd "%CD%" mpirun -np ${cfg.np} ${cfg.exe} "${cfg.fname}"`
+      : `wsl.exe --cd "%CD%" ${cfg.exe} "${cfg.fname}"`;
+    return {
+      filename:'rodar_mrbayes_wsl.bat',
+      content:[
+        '@echo off',
+        'setlocal',
+        'cd /d "%~dp0"',
+        'where wsl >nul 2>nul',
+        'if errorlevel 1 (',
+        '  echo [ERRO] WSL nao encontrado. Instale com: wsl --install',
+        '  pause',
+        '  exit /b 1',
+        ')',
+        `if not exist "${cfg.fname}" (`,
+        `  echo [ERRO] Arquivo "${cfg.fname}" nao encontrado nesta pasta.`,
+        '  pause',
+        '  exit /b 1',
+        ')',
+        '',
+        'echo Iniciando MrBayes via WSL...',
+        mpiLine,
+        'set "EXITCODE=%ERRORLEVEL%"',
+        'echo.',
+        'if not "%EXITCODE%"=="0" echo [ERRO] A analise terminou com codigo %EXITCODE%.',
+        'if "%EXITCODE%"=="0" echo Analise concluida.',
+        'pause',
+        'endlocal',
+        ''
+      ].join('\r\n')
+    };
+  }
+
+  wireDropzone('runnerDropzone','runnerFile', async file => {
+    try{
+      runnerState.file = file;
+      runnerState.text = await readTextFile(file);
+      document.getElementById('runnerFileName').textContent = file.name;
+      updateRunnerCommand();
+    }catch(err){
+      const r = document.getElementById('runnerReport');
+      r.classList.add('show');
+      r.innerHTML = `<span class="status-warn">Erro:</span> ${escapeHtml(err.message || String(err))}`;
+    }
+  });
+  ['runnerPlatform','runnerExe','runnerMpi','runnerNp'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updateRunnerCommand);
+    document.getElementById(id).addEventListener('change', updateRunnerCommand);
+  });
+  document.getElementById('btnRunnerScript').addEventListener('click', () => {
+    if (!runnerState.file) return;
+    const script = buildRunnerScript();
+    downloadTextFile(script.filename, script.content);
+  });
+  document.getElementById('btnRunnerCommand').addEventListener('click', async () => {
+    if (!runnerState.file) return;
+    const ok = await copyText(updateRunnerCommand().command);
+    const btn = document.getElementById('btnRunnerCommand');
+    btn.textContent = ok ? 'Comando copiado' : 'Não foi possível copiar';
+    setTimeout(() => btn.textContent = 'Copiar comando', 1400);
+  });
+
+  document.getElementById('runnerPlatform').addEventListener('change', () => {
+    const el=document.getElementById('runnerExe');
+    if(document.getElementById('runnerPlatform').value==='win') el.value='mb.exe';
+    else el.value='mb';
+    updateRunnerCommand();
+  });
+
+  // ---------------- IQ-TREE TAB ----------------
+  const iqState = { file:null, text:'', partitionFile:null, partitionText:'' };
+
+  function inferIqFileStats(text, filename){
+    const clean = text.replace(/\r/g,'');
+    const looksFasta = clean.trimStart().startsWith('>');
+    if (looksFasta){
+      const rows = clean.split('\n');
+      let taxa=0, current=null, len=0, lengths=[];
+      rows.forEach(line => {
+        const s=line.trim();
+        if (s.startsWith('>')){
+          if (current !== null) lengths.push(len);
+          current=s.slice(1).trim();
+          taxa++;
+          len=0;
+        } else if (current!==null) {
+          len += s.replace(/\s+/g,'').length;
+        }
+      });
+      if (current !== null) lengths.push(len);
+      return {format:'FASTA', taxa, nchar:lengths.length?Math.max(...lengths):null};
+    }
+    const dim = clean.match(/dimensions[^;]*ntax\s*=\s*(\d+)[^;]*nchar\s*=\s*(\d+)/i)
+      || clean.match(/dimensions[^;]*nchar\s*=\s*(\d+)[^;]*ntax\s*=\s*(\d+)/i);
+    if (dim) return {format:'NEXUS', taxa:parseInt((clean.match(/ntax\s*=\s*(\d+)/i)||[])[1]||'0',10), nchar:parseInt((clean.match(/nchar\s*=\s*(\d+)/i)||[])[1]||'0',10)};
+    const first = clean.split('\n').find(Boolean) || '';
+    const phylip = first.trim().match(/^(\d+)\s+(\d+)/);
+    if (phylip) return {format:'PHYLIP', taxa:parseInt(phylip[1],10), nchar:parseInt(phylip[2],10)};
+    return {format:(filename||'').split('.').pop().toUpperCase() || 'arquivo', taxa:null, nchar:null};
+  }
+
+  function iqCommandConfig(){
+    const file = iqState.file;
+    const fname = file ? file.name : 'alinhamento.fasta';
+    const executable = document.getElementById('iqExecutable').value.trim() || 'iqtree2';
+    const datatype = document.getElementById('iqDataType').value;
+    const model = document.getElementById('iqModel').value;
+    const bb = parseInt(document.getElementById('iqBootstrap').value,10) || 0;
+    const alrt = parseInt(document.getElementById('iqAlrt').value,10) || 0;
+    const threads = document.getElementById('iqThreads').value;
+    const ntmax = document.getElementById('iqNtMax').value.trim();
+    const prefix = (document.getElementById('iqPrefix').value.trim() || baseName(fname)).replace(/\s+/g,'_');
+    const outgroup = document.getElementById('iqOutgroup').value.trim();
+    const partMode = document.getElementById('iqPartitionMode').value;
+    const partName = iqState.partitionFile ? iqState.partitionFile.name : '';
+
+    const args = [`-s "${fname}"`];
+    if (datatype !== 'auto') args.push(`-st ${datatype}`);
+    args.push(`-m ${model}`);
+    if (bb > 0) args.push(`-B ${bb}`);
+    if (alrt > 0) args.push(`-alrt ${alrt}`);
+    if (threads === 'AUTO') {
+      args.push('-T AUTO');
+      if (ntmax) args.push(`-ntmax ${ntmax}`);
+    } else {
+      args.push(`-T ${threads}`);
+    }
+    if (outgroup) args.push(`-o "${outgroup.replace(/"/g,'')}"`);
+    if (partMode !== 'none' && partName) {
+      args.push(partMode === 'spp' ? `-spp "${partName}"` : `-p "${partName}"`);
+    }
+    args.push(`-pre "${prefix}"`);
+    return {fname, executable, args, command:`${executable} ${args.join(' ')}`, prefix, bb, alrt, partMode, partName};
+  }
+
+  function updateIqCommand(){
+    const cfg = iqCommandConfig();
+    document.getElementById('iqCommandPreview').textContent = iqState.file
+      ? cfg.command
+      : 'Carregue um alinhamento para montar o comando.';
+    document.getElementById('btnIqBat').disabled = !iqState.file;
+    document.getElementById('btnIqSh').disabled = !iqState.file;
+    document.getElementById('btnIqCopy').disabled = !iqState.file;
+    const report = document.getElementById('iqReport');
+    if (iqState.file){
+      const stats = inferIqFileStats(iqState.text, iqState.file.name);
+      report.classList.add('show');
+      report.innerHTML = `<span class="status-ok">Entrada:</span> ${escapeHtml(iqState.file.name)} · formato ${escapeHtml(stats.format)}${stats.taxa!==null?' · '+stats.taxa+' táxon(ns)':''}${stats.nchar!==null?' · '+stats.nchar+' sítios':''}.`;
+    }
+    return cfg;
+  }
+
+  function buildIqBat(){
+    const cfg = updateIqCommand();
+    return [
+      '@echo off',
+      'setlocal',
+      'cd /d "%~dp0"',
+      `echo Executando IQ-TREE...`,
+      `${cfg.executable} ${cfg.args.join(' ')}`,
+      'set "EXITCODE=%ERRORLEVEL%"',
+      'echo.',
+      'if not "%EXITCODE%"=="0" echo [ERRO] IQ-TREE terminou com codigo %EXITCODE%.',
+      'if "%EXITCODE%"=="0" echo Analise concluida.',
+      'pause',
+      'endlocal',
+      ''
+    ].join('\r\n');
+  }
+
+  function buildIqSh(){
+    const cfg = updateIqCommand();
+    return [
+      '#!/bin/bash',
+      'set -e',
+      'cd "$(dirname "$0")"',
+      `${cfg.executable} ${cfg.args.join(' ')}`,
+      ''
+    ].join('\n');
+  }
+
+  wireDropzone('iqDropzone','iqFile', async file => {
+    try{
+      iqState.file=file;
+      iqState.text=await readTextFile(file);
+      document.getElementById('iqFileName').textContent=file.name;
+      const prefix=document.getElementById('iqPrefix');
+      if(!prefix.value.trim()) prefix.value=baseName(file.name);
+      updateIqCommand();
+    }catch(err){
+      const r=document.getElementById('iqReport');
+      r.classList.add('show');
+      r.innerHTML = `<span class="status-warn">Erro:</span> ${escapeHtml(err.message || String(err))}`;
+    }
+  });
+
+  document.getElementById('iqPartitionFile').addEventListener('change', async () => {
+    const file=document.getElementById('iqPartitionFile').files[0];
+    if(!file){
+      iqState.partitionFile=null;
+      iqState.partitionText='';
+      document.getElementById('iqPartitionName').textContent='Nenhum arquivo de partição selecionado.';
+      updateIqCommand();
+      return;
+    }
+    iqState.partitionFile=file;
+    iqState.partitionText=await readTextFile(file);
+    document.getElementById('iqPartitionName').textContent=file.name;
+    updateIqCommand();
+  });
+
+  ['iqDataType','iqModel','iqBootstrap','iqAlrt','iqThreads','iqNtMax','iqPrefix','iqExecutable','iqOutgroup','iqPartitionMode'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updateIqCommand);
+    document.getElementById(id).addEventListener('change', updateIqCommand);
+  });
+  document.getElementById('btnIqBat').addEventListener('click', () => {
+    if(!iqState.file) return;
+    downloadTextFile('rodar_iqtree.bat', buildIqBat());
+  });
+  document.getElementById('btnIqSh').addEventListener('click', () => {
+    if(!iqState.file) return;
+    downloadTextFile('rodar_iqtree.sh', buildIqSh());
+  });
+  document.getElementById('btnIqCopy').addEventListener('click', async () => {
+    if(!iqState.file) return;
+    const ok=await copyText(updateIqCommand().command);
+    const btn=document.getElementById('btnIqCopy');
+    btn.textContent=ok?'Comando copiado':'Não foi possível copiar';
+    setTimeout(()=>btn.textContent='Copiar comando',1400);
+  });
+
+  // ---------------- NEWICK CONVERTER TAB ----------------
+  const newickState = { file:null, text:'', output:'' };
+
+  function parseTranslateBlock(text){
+    const result = {};
+    const m = text.match(/\btranslate\b([\s\S]*?);/i);
+    if(!m) return result;
+    const body=m[1];
+    const rx=/(?:^|,)\s*(\d+)\s+(?:"([^"]+)"|'([^']+)'|([^,\s]+))\s*(?=,|$)/g;
+    let match;
+    while((match=rx.exec(body))){
+      result[match[1]]=match[2]||match[3]||match[4];
+    }
+    return result;
+  }
+
+  function extractNewickTrees(text){
+    const clean=text.replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n');
+    const translate=parseTranslateBlock(clean);
+    const strippedTranslate=clean.replace(/\btranslate\b[\s\S]*?;/i,'');
+    const trees=[];
+    const treeRx=/\b(?:tree|utree)\s+[^=;]+=\s*([\s\S]*?;)/gi;
+    let m;
+    while((m=treeRx.exec(strippedTranslate))){
+      trees.push({tree:m[1].trim(), translate});
+    }
+    if(trees.length) return trees;
+    // NEXUS can contain a tree command without a conventional name spacing; fallback to any line ending in semicolon
+    if(/\bbegin\s+trees\b/i.test(clean)){
+      strippedTranslate.split(/\n/).forEach(line=>{
+        const t=line.trim();
+        if(/^(?:tree|utree)\b/i.test(t) && t.includes('=')){
+          const i=t.indexOf('=');
+          const tree=t.slice(i+1).trim();
+          if(tree.endsWith(';')) trees.push({tree,translate});
+        }
+      });
+      if(trees.length) return trees;
+    }
+    // Otherwise treat the entire input as one or more Newick trees.
+    return clean.split(/(?<=;)\s*/).map(s=>s.trim()).filter(Boolean).map(tree=>({tree,translate}));
+  }
+
+  function applyTranslate(tree, translate){
+    return tree.replace(/(^|[,(]\s*)(\d+)(?=\s*[:),])/g, (m, lead, key) => {
+      return translate[key] ? lead + translate[key] : m;
+    });
+  }
+
+  function validateNewick(tree){
+    let depth=0, quoted=false, errors=[];
+    for(let i=0;i<tree.length;i++){
+      const ch=tree[i];
+      if(ch==="'" || ch==='"') quoted=!quoted;
+      if(quoted) continue;
+      if(ch==='(') depth++;
+      else if(ch===')'){
+        depth--;
+        if(depth<0) errors.push('parênteses fechando antes de abrir');
+      }
+    }
+    if(depth!==0) errors.push('parênteses desbalanceados');
+    if(!tree.trim().endsWith(';')) errors.push('a árvore não termina em ponto e vírgula');
+    return errors;
+  }
+
+  function cleanNewickTree(tree, translate, options){
+    let out=tree.trim();
+    if(options.replaceTranslate && Object.keys(translate).length) out=applyTranslate(out,translate);
+    if(options.stripComments) out=out.replace(/\[[^\]]*\]/g,'');
+    out=out.replace(/\s+/g,' ');
+    // Keep standard Newick while avoiding extra whitespace around punctuation.
+    out=out.replace(/\s*,\s*/g,',').replace(/\(\s+/g,'(').replace(/\s+\)/g,')');
+    out=out.replace(/;\s*$/,';');
+    return out;
+  }
+
+  function convertNewick(){
+    const pasted=document.getElementById('newickPaste').value.trim();
+    const source=pasted || newickState.text;
+    const report=document.getElementById('newickReport');
+    report.classList.remove('show');
+    if(!source){
+      report.classList.add('show');
+      report.innerHTML='<span class="status-warn">Nenhuma árvore foi fornecida.</span>';
+      return;
+    }
+    const items=extractNewickTrees(source);
+    const stripComments=document.getElementById('newickStripComments').value==='yes';
+    const replaceTranslate=document.getElementById('newickReplaceTranslate').value==='yes';
+    const outputs=[], warnings=[];
+    items.forEach((item,idx)=>{
+      const cleaned=cleanNewickTree(item.tree,item.translate,{stripComments,replaceTranslate});
+      const errs=validateNewick(cleaned);
+      if(errs.length) warnings.push(`Árvore ${idx+1}: ${errs.join('; ')}`);
+      outputs.push(cleaned);
+    });
+    newickState.output=outputs.join('\n');
+    document.getElementById('newickPreview').textContent=newickState.output;
+    document.getElementById('newickTreeCount').textContent=`${outputs.length} árvore(s)`;
+    document.getElementById('btnNewickDownload').disabled=!outputs.length;
+    document.getElementById('btnNewickCopy').disabled=!outputs.length;
+    report.classList.add('show');
+    if(warnings.length){
+      report.innerHTML=`<span class="status-warn">A conversão terminou com avisos:</span><br>${warnings.map(escapeHtml).join('<br>')}`;
+    }else{
+      report.innerHTML=`<span class="status-ok">Conversão concluída:</span> ${outputs.length} árvore(s) em Newick padrão.`;
+    }
+  }
+
+  wireDropzone('newickDropzone','newickFile', async file => {
+    try{
+      newickState.file=file;
+      newickState.text=await readTextFile(file);
+      document.getElementById('newickFileName').textContent=file.name;
+      document.getElementById('newickPaste').value='';
+      convertNewick();
+    }catch(err){
+      const r=document.getElementById('newickReport');
+      r.classList.add('show');
+      r.innerHTML = `<span class="status-warn">Erro:</span> ${escapeHtml(err.message || String(err))}`;
+    }
+  });
+  document.getElementById('newickPaste').addEventListener('input', () => {
+    if(document.getElementById('newickPaste').value.trim()) convertNewick();
+  });
+  document.getElementById('btnNewickConvert').addEventListener('click', convertNewick);
+  document.getElementById('btnNewickDownload').addEventListener('click', () => {
+    if(!newickState.output) return;
+    const base = baseName(newickState.file ? newickState.file.name : 'arvore');
+    downloadTextFile(base + '.nwk', newickState.output + '\n');
+  });
+  document.getElementById('btnNewickCopy').addEventListener('click', async () => {
+    if(!newickState.output) return;
+    const ok=await copyText(newickState.output);
+    const btn=document.getElementById('btnNewickCopy');
+    btn.textContent=ok?'Newick copiado':'Não foi possível copiar';
+    setTimeout(()=>btn.textContent='Copiar Newick',1400);
+  });
 
   // ---------------- INIT ----------------
   updateNpSuggestion();
