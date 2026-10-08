@@ -532,8 +532,8 @@
 </label>
 <label class="pill" data-value="wsl">
   <input type="radio" name="installPlatform" value="wsl">
-  <div class="p-title">Windows com WSL</div>
-  <div class="p-sub">Instala o MrBayes dentro do Ubuntu no WSL — recomendado para usar MPI e todos os núcleos</div>
+  <div class="p-title">Windows com WSL (mais núcleos/threads)</div>
+  <div class="p-sub">Um único clique no .bat já abre o WSL e roda tudo — sem terminal, sem cd, sem comandos manuais</div>
 </label>
 
       <div id="installLinksWin" style="margin-top:16px;">
@@ -824,21 +824,6 @@ begin data;
   <div class="p-sub">Roda o MrBayes dentro do Ubuntu no WSL — usa todos os núcleos, com MPI opcional</div>
 </label>
 
-      <div class="platform-extra" id="platformExtraWin">
-        <div class="field">
-          <label for="execWin">Nome/caminho do executável</label>
-          <input type="text" id="execWin" value="mb.exe">
-        </div>
-        <p class="hint" style="margin-top:8px;">Se o MrBayes não estiver no PATH do Windows, use o caminho completo entre aspas, ex: <code style="font-family:'IBM Plex Mono',monospace">"C:\Program Files\MrBayes\mb.exe"</code>.</p>
-      </div>
-
-      <div class="platform-extra" id="platformExtraUnix" style="display:none;">
-        <div class="field">
-          <label for="execUnix">Nome/caminho do executável</label>
-          <input type="text" id="execUnix" value="mb">
-        </div>
-      </div>
-
       <div class="platform-extra" id="platformExtraMpi" style="display:none;">
         <div class="field-grid">
           <div class="field">
@@ -856,9 +841,9 @@ begin data;
           </div>
         </div>
       </div>
-    </div>
+
       <div class="platform-extra" id="platformExtraWsl" style="display:none;">
-        <p class="hint" style="margin:0 0 12px;">O WSL2 expõe todos os núcleos do seu processador ao Ubuntu — é a forma mais simples de sair do limite de threads do MrBayes nativo do Windows. Se o arquivo `.nex` estiver em uma pasta do Windows (ex: Downloads), você acessa de dentro do WSL por <code style="font-family:'IBM Plex Mono',monospace">/mnt/c/Users/seu_usuario/Downloads</code>.</p>
+        <p class="hint" style="margin:0 0 12px;">O WSL2 expõe todos os núcleos do seu processador ao Ubuntu — é a forma mais simples de sair do limite de threads do MrBayes nativo do Windows. O <code>.bat</code> gerado cuida de tudo: entra no WSL, detecta núcleos, instala o MrBayes se necessário e roda a análise com o paralelismo ideal. <strong>Você só precisa dar dois cliques no arquivo.</strong></p>
 
         <div class="toggle-row" style="border-top:1px solid var(--rule); padding-top:12px;">
           <div>
@@ -885,6 +870,7 @@ begin data;
           </div>
         </div>
       </div>
+    </div>
   </section>
 
   <!-- STEP 6 -->
@@ -1684,7 +1670,7 @@ begin data;
     label.textContent = val === 'win' ? 'Baixar script (.bat)'
       : val === 'unix' ? 'Baixar script (.sh)'
       : val === 'mpi' ? 'Baixar script (.sh) com MPI'
-      : 'Baixar script WSL (.sh)';
+      : 'Baixar .bat inteligente (.sh → .bat via WSL)';
 
     updateWslMpiVisibility();
     updateRunbox();
@@ -1722,32 +1708,50 @@ begin data;
     if (val === 'win'){
       const exe = document.getElementById('execWin').value.trim() || 'mb.exe';
       title.textContent = 'Como iniciar no Windows';
-      box.innerHTML = `Abra o Prompt de Comando (cmd) na pasta onde salvou o arquivo e rode: <code>${escapeHtml(exe)} ${escapeHtml(fname)}</code>. A MCMC começa sozinha — não é preciso digitar mais nada.`;
+      box.innerHTML = `Dê dois cliques no <code>rodar_analise.bat</code> que você baixou, ou abra o Prompt de Comando na pasta e rode <code>${escapeHtml(exe)} ${escapeHtml(fname)}</code>.`;
     } else if (val === 'unix'){
       const exe = document.getElementById('execUnix').value.trim() || 'mb';
       title.textContent = 'Como iniciar no Ubuntu/Linux';
-      box.innerHTML = `Abra o terminal na pasta onde salvou o arquivo e rode: <code>${escapeHtml(exe)} ${escapeHtml(fname)}</code>. A MCMC começa sozinha — não é preciso digitar mais nada.`;
+      box.innerHTML = `No terminal, dentro da pasta do arquivo, rode <code>${escapeHtml(exe)} ${escapeHtml(fname)}</code> — ou use o <code>rodar_analise.sh</code> baixado.`;
     } else if (val === 'mpi'){
       const exe = document.getElementById('execMpi').value.trim() || 'mb';
       const mpirun = document.getElementById('mpirunCmd').value.trim() || 'mpirun';
       const np = document.getElementById('npCount').value || '8';
       title.textContent = 'Como iniciar no Ubuntu com MPI';
-      box.innerHTML = `Abra o terminal do Ubuntu e rode: <code>${escapeHtml(mpirun)} -np ${escapeHtml(np)} ${escapeHtml(exe)} ${escapeHtml(fname)}</code>. Ou use o script pronto abaixo.`;
+      box.innerHTML = `No terminal do Ubuntu, rode <code>${escapeHtml(mpirun)} -np ${escapeHtml(np)} ${escapeHtml(exe)} ${escapeHtml(fname)}</code> — ou use o <code>rodar_analise_mpi.sh</code> baixado.`;
     } else {
-      // WSL
-      const useMpi = document.getElementById('wslUseMpi').checked;
-      const exe = document.getElementById('execWsl').value.trim() || 'mb';
-      title.textContent = 'Como iniciar pelo WSL (Windows Subsystem for Linux)';
-      const pathHint = `Se o arquivo estiver em uma pasta do Windows (ex: Downloads), entre nela pelo WSL com <code>cd /mnt/c/Users/seu_usuario/Downloads</code>.`;
-      if (useMpi){
-        const mpirun = document.getElementById('mpirunCmdWsl').value.trim() || 'mpirun';
-        const np = document.getElementById('npCountWsl').value || '8';
-        box.innerHTML = `${pathHint} Depois rode: <code>${escapeHtml(mpirun)} -np ${escapeHtml(np)} ${escapeHtml(exe)} "${escapeHtml(fname)}"</code>. Para conferir os núcleos disponíveis, use <code>nproc</code>.`;
-      } else {
-        box.innerHTML = `${pathHint} Depois rode: <code>${escapeHtml(exe)} "${escapeHtml(fname)}"</code>.`;
-      }
+      // WSL: .bat que chama wsl.exe para instalar via apt
+      content =
+        `@echo off\r\n` +
+        `chcp 65001 >nul\r\n` +
+        `echo ============================================================\r\n` +
+        `echo   Instalando MrBayes e MrBayes-MPI dentro do WSL\r\n` +
+        `echo ============================================================\r\n` +
+        `echo.\r\n` +
+        `\r\n` +
+        `where wsl >nul 2>nul\r\n` +
+        `if errorlevel 1 (\r\n` +
+        `  echo [ERRO] WSL nao encontrado.\r\n` +
+        `  echo Abra o PowerShell como administrador e rode:  wsl --install\r\n` +
+        `  pause\r\n` +
+        `  exit /b 1\r\n` +
+        `)\r\n` +
+        `\r\n` +
+        `echo Sera pedida sua senha de usuario do Ubuntu.\r\n` +
+        `echo.\r\n` +
+        `wsl.exe --exec sudo apt update\r\n` +
+        `wsl.exe --exec sudo apt install -y mrbayes mrbayes-mpi\r\n` +
+        `\r\n` +
+        `echo.\r\n` +
+        `echo Verificando instalacao...\r\n` +
+        `wsl.exe --exec mb -v\r\n` +
+        `wsl.exe --exec sh -c "nproc"\r\n` +
+        `\r\n` +
+        `echo.\r\n` +
+        `echo Pronto! O MrBayes esta instalado no WSL.\r\n` +
+        `pause\r\n`;
+      outName = 'instalar_mrbayes_wsl.bat';
     }
-  }
 
   // ---------------- DOWNLOAD ----------------
   document.getElementById('btnDownload').addEventListener('click', () => {
@@ -1783,26 +1787,135 @@ begin data;
       content = `#!/bin/bash\nset -e\ncd "$(dirname "$0")"\n${mpirun} -np ${np} ${exe} "${fname}"\n`;
       outName = 'rodar_analise_mpi.sh';
     } else {
-      // WSL
+      // WSL — .bat inteligente: detecta núcleos, instala se faltar, roda com -np ótimo
       const useMpi = document.getElementById('wslUseMpi').checked;
       const exe = document.getElementById('execWsl').value.trim() || 'mb';
+      const requestedNp = document.getElementById('npCountWsl').value || '8';
+      const nruns = document.getElementById('nruns').value || '2';
+      const nchains = document.getElementById('nchains').value || '4';
+      const chainsTotal = (parseInt(nruns,10) || 2) * (parseInt(nchains,10) || 4);
+
+      const linhas = [];
+      linhas.push('@echo off');
+      linhas.push('setlocal EnableDelayedExpansion');
+      linhas.push('chcp 65001 >nul');                 // UTF-8 no console
+      linhas.push('cd /d "%~dp0"');
+      linhas.push('');
+      linhas.push(`set "NEXFILE=${fname}"`);
+      linhas.push(`set "MB_EXE=${exe}"`);
+      linhas.push(`set "MPIRUN=${document.getElementById('mpirunCmdWsl').value.trim() || 'mpirun'}"`);
+      linhas.push(`set "REQ_NP=${requestedNp}"`);
+      linhas.push(`set "CHAINS_TOTAL=${chainsTotal}"`);
+      linhas.push('');
+      linhas.push('echo ============================================================');
+      linhas.push('echo   MrBayes via WSL - execucao automatica');
+      linhas.push('echo ============================================================');
+      linhas.push('echo   Pasta  : %CD%');
+      linhas.push('echo   Arquivo: %NEXFILE%');
+      linhas.push('echo.');
+      linhas.push('');
+      linhas.push('REM ---- 1) WSL instalado? ----');
+      linhas.push('where wsl >nul 2>nul');
+      linhas.push('if errorlevel 1 (');
+      linhas.push('  echo [ERRO] WSL nao encontrado.');
+      linhas.push('  echo Abra o PowerShell como administrador e rode:  wsl --install');
+      linhas.push('  echo Depois reinicie o computador e rode este .bat novamente.');
+      linhas.push('  pause');
+      linhas.push('  exit /b 1');
+      linhas.push(')');
+      linhas.push('');
+      linhas.push('REM ---- 2) Checa se o arquivo .nex existe ----');
+      linhas.push('if not exist "%NEXFILE%" (');
+      linhas.push('  echo [ERRO] O arquivo "%NEXFILE%" nao esta nesta pasta.');
+      linhas.push('  echo Coloque este .bat na mesma pasta do arquivo .nex.');
+      linhas.push('  pause');
+      linhas.push('  exit /b 1');
+      linhas.push(')');
+      linhas.push('');
+      linhas.push('REM ---- 3) Detecta nucleos disponiveis no WSL ----');
+      linhas.push('for /f "usebackq tokens=*" %%C in (`wsl.exe --exec nproc 2^>nul`) do set "NPROC=%%C"');
+      linhas.push('if not defined NPROC set "NPROC=4"');
+      linhas.push('echo   Nucleos detectados no WSL : %NPROC%');
+      linhas.push('echo   Cadeias totais (nruns x nchains): %CHAINS_TOTAL%');
+      linhas.push('');
+      linhas.push('REM ---- 4) Calcula -np otimo = min(NPROC, CHAINS_TOTAL) ----');
+      linhas.push('set /a NP_OPT=%NPROC%');
+      linhas.push('if %CHAINS_TOTAL% LSS %NP_OPT% set /a NP_OPT=%CHAINS_TOTAL%');
+      linhas.push('if %REQ_NP% LSS %NP_OPT% set /a NP_OPT=%REQ_NP%');
+      linhas.push('if %NP_OPT% LSS 1 set /a NP_OPT=1');
+      linhas.push('echo   Processos MPI que serao usados: %NP_OPT%');
+      linhas.push('echo.');
+      linhas.push('');
+      linhas.push('REM ---- 5) MrBayes instalado? ----');
+      linhas.push('set "NEED_INSTALL=0"');
+      linhas.push('wsl.exe --exec sh -c "command -v %MB_EXE% >/dev/null 2>&1"');
+      linhas.push('if errorlevel 1 set "NEED_INSTALL=1"');
       if (useMpi){
-        const mpirun = document.getElementById('mpirunCmdWsl').value.trim() || 'mpirun';
-        const np = document.getElementById('npCountWsl').value || '8';
-        content = `#!/bin/bash\n` +
-          `set -e\n` +
-          `# Rode este script dentro do WSL (Ubuntu), na pasta do arquivo .nex\n` +
-          `# Se o arquivo estiver no Windows, copie/mova para dentro do WSL ou acesse via /mnt/c/...\n` +
-          `cd "$(dirname "$0")"\n` +
-          `${mpirun} -np ${np} ${exe} "${fname}"\n`;
-        outName = 'rodar_analise_wsl_mpi.sh';
-      } else {
-        content = `#!/bin/bash\n` +
-          `set -e\n` +
-          `cd "$(dirname "$0")"\n` +
-          `${exe} "${fname}"\n`;
-        outName = 'rodar_analise_wsl.sh';
+        linhas.push('wsl.exe --exec sh -c "command -v %MPIRUN% >/dev/null 2>&1"');
+        linhas.push('if errorlevel 1 set "NEED_INSTALL=1"');
       }
+      linhas.push('');
+      linhas.push('if "%NEED_INSTALL%"=="1" (');
+      linhas.push('  echo [AVISO] MrBayes (ou mpirun) nao foi encontrado no WSL.');
+      linhas.push('  set /p "RESP=Deseja instalar agora? (S/N): "');
+      linhas.push('  if /i "!RESP!"=="S" (');
+      linhas.push('    echo.');
+      linhas.push('    echo Instalando mrbayes e mrbayes-mpi via apt...');
+      linhas.push('    echo Sera pedida sua senha de usuario do Ubuntu.');
+      linhas.push('    echo.');
+      linhas.push('    wsl.exe --exec sudo apt update');
+      linhas.push('    wsl.exe --exec sudo apt install -y mrbayes mrbayes-mpi');
+      linhas.push('    echo.');
+      linhas.push('    wsl.exe --exec sh -c "command -v %MB_EXE% >/dev/null 2>&1"');
+      linhas.push('    if errorlevel 1 (');
+      linhas.push('      echo [ERRO] Instalacao falhou. Rode manualmente dentro do WSL:');
+      linhas.push('      echo     sudo apt install -y mrbayes mrbayes-mpi');
+      linhas.push('      pause');
+      linhas.push('      exit /b 1');
+      linhas.push('    )');
+      linhas.push('  ) else (');
+      linhas.push('    echo Execucao cancelada. Instale o MrBayes dentro do WSL e tente de novo.');
+      linhas.push('    pause');
+      linhas.push('    exit /b 1');
+      linhas.push('  )');
+      linhas.push(')');
+      linhas.push('');
+      linhas.push('echo ------------------------------------------------------------');
+      linhas.push('echo  Iniciando MCMC...');
+      linhas.push('echo ------------------------------------------------------------');
+      linhas.push('echo.');
+      linhas.push('');
+      linhas.push('REM ---- 6) Executa. --cd faz o WSL entrar direto nesta pasta ----');
+      if (useMpi){
+        linhas.push('if %NP_OPT% GTR 1 (');
+        linhas.push('  wsl.exe --cd "%CD%" %MPIRUN% -np %NP_OPT% %MB_EXE% "%NEXFILE%"');
+        linhas.push(') else (');
+        linhas.push('  echo [INFO] Apenas 1 nucleo/cadeia - rodando sem MPI.');
+        linhas.push('  wsl.exe --cd "%CD%" %MB_EXE% "%NEXFILE%"');
+        linhas.push(')');
+      } else {
+        linhas.push('wsl.exe --cd "%CD%" %MB_EXE% "%NEXFILE%"');
+      }
+      linhas.push('');
+      linhas.push('set "EXITCODE=%errorlevel%"');
+      linhas.push('echo.');
+      linhas.push('if not "%EXITCODE%"=="0" (');
+      linhas.push('  echo [ERRO] MrBayes terminou com codigo %EXITCODE%.');
+      linhas.push('  echo Verifique a mensagem acima. Causas comuns:');
+      linhas.push('  echo   - %NP_OPT% processos excedem nucleos livres - tente reduzir nruns x nchains.');
+      linhas.push('  echo   - Arquivo NEXUS com erro de sintaxe - reabra esta pagina e regenere.');
+      linhas.push(') else (');
+      linhas.push('  echo ============================================================');
+      linhas.push('  echo   Analise concluida com sucesso!');
+      linhas.push('  echo   Os arquivos .p, .t, .con.tre e o .log estao nesta pasta.');
+      linhas.push('  echo ============================================================');
+      linhas.push(')');
+      linhas.push('echo.');
+      linhas.push('pause');
+      linhas.push('endlocal');
+
+      content = linhas.join('\r\n') + '\r\n';
+      outName = 'rodar_analise_wsl.bat';
     }
 
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
@@ -1827,8 +1940,9 @@ begin data;
     document.getElementById('installLinksUnix').style.display = val === 'unix' ? '' : 'none';
     document.getElementById('installLinksWsl').style.display = val === 'wsl' ? '' : 'none';
     const label = document.getElementById('btnInstallScriptLabel');
-    label.textContent = val === 'win' ? 'Baixar script de instalação (.bat)' : 'Baixar script de instalação (.sh)';
-  }
+    label.textContent = val === 'win' ? 'Baixar script de instalação (.bat)'
+      : val === 'unix' ? 'Baixar script de instalação (.sh)'
+      : 'Baixar instalador (.bat que chama o WSL)';
 
   document.querySelectorAll('input[name="installPlatform"]').forEach(inp => {
     inp.addEventListener('change', updateInstallUI);
