@@ -2,6 +2,18 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+<!-- FIX: S-01 — política CSP restritiva para app estática client-side -->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'none';
+  script-src 'self' 'unsafe-inline';
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  font-src https://fonts.gstatic.com;
+  img-src 'self' data:;
+  connect-src 'none';
+  form-action 'none';
+  base-uri 'none';
+  frame-ancestors 'none';
+">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gerador de Análises MrBayes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -486,6 +498,8 @@
     border-radius:5px;
     font-size:12.5px;
   }
+  /* FIX: O-02 */
+  .runbox p.hint{ font-size:12px; color:var(--ink-soft); margin:8px 0 0; }
 
   footer{
     text-align:center;
@@ -644,6 +658,10 @@
     .tool-card{ padding:15px; }
   }
 
+  /* FIX: U-01 / F-03 — destaque de erros de partição e avisos de ação necessária */
+  .partition-validation .warn-item, .warn-item.action-needed{ color:var(--danger); font-weight:600; }
+  .partition-validation .dot, .warn-item.action-needed .dot{ color:var(--danger); }
+
   .badge-empty{ color:var(--ink-soft); font-style:italic; }
 </style>
 </head>
@@ -663,15 +681,17 @@
 </header>
 
 <div class="app-tabs-wrap">
-  <nav class="app-tabs" id="appTabs" aria-label="Ferramentas filogenéticas">
-    <button class="app-tab active" type="button" data-tab="bayes">Gerar MrBayes</button>
-    <button class="app-tab" type="button" data-tab="runner">Rodar MrBayes</button>
-    <button class="app-tab" type="button" data-tab="iqtree">Gerar IQ-TREE</button>
-    <button class="app-tab" type="button" data-tab="newick">.tre → Newick</button>
+  <!-- FIX: U-05 — semântica ARIA para navegação por abas -->
+  <nav class="app-tabs" id="appTabs" role="tablist" aria-label="Ferramentas filogenéticas">
+    <button class="app-tab active" id="tabbtn-bayes" type="button" role="tab" aria-selected="true" aria-controls="tab-bayes" data-tab="bayes">Gerar MrBayes</button>
+    <button class="app-tab" id="tabbtn-runner" type="button" role="tab" aria-selected="false" aria-controls="tab-runner" data-tab="runner">Rodar MrBayes</button>
+    <button class="app-tab" id="tabbtn-iqtree" type="button" role="tab" aria-selected="false" aria-controls="tab-iqtree" data-tab="iqtree">Gerar IQ-TREE</button>
+    <button class="app-tab" id="tabbtn-newick" type="button" role="tab" aria-selected="false" aria-controls="tab-newick" data-tab="newick">.tre → Newick</button>
   </nav>
 </div>
 
-<section class="tab-panel active" id="tab-bayes">
+<!-- FIX: U-05 — painel ARIA associado à aba bayes -->
+<section class="tab-panel active" id="tab-bayes" role="tabpanel" aria-labelledby="tabbtn-bayes" tabindex="0">
 
 <div class="wrap">
   <!-- STEP 0: INSTALL -->
@@ -757,6 +777,10 @@ begin data;
         </div>
         <div class="warn-list" id="warnList"></div>
       </div>
+      <!-- FIX: U-04 — botão para limpar entrada e restaurar o estado inicial do gerador -->
+      <div class="download-bar" style="margin-top:12px;">
+        <button class="btn-secondary" id="btnReset" type="button">Limpar tudo</button>
+      </div>
     </div>
   </section>
 
@@ -772,8 +796,12 @@ begin data;
           <option value="dna" selected>Nucleotídeo (DNA / RNA)</option>
           <option value="protein">Proteína (aminoácidos)</option>
           <option value="standard">Morfológico / discreto (standard)</option>
+          <!-- FIX: C-06 — opções de restrição e matriz mista com salvaguarda -->
+          <option value="restriction">Dados de restrição (restriction)</option>
+          <option value="mixed">Matriz mista (DNA + morfologia)</option>
         </select>
         <div class="hint">Detectado automaticamente a partir do arquivo quando possível — ajuste se necessário.</div>
+        <div class="hint" id="mixedDataHint" style="display:none; color:var(--danger);">Matriz mista DNA + morfologia exige definição correta dos tipos de dados e dos intervalos no NEXUS; esta ferramenta ainda não gera esse formato automaticamente. A geração e os downloads serão bloqueados para evitar um script incorreto. O parâmetro <code>nst=mixed</code> é uma opção de média de modelos de DNA, não uma definição de matriz mista.</div>
       </div>
 
       <div class="toggle-row">
@@ -873,6 +901,8 @@ begin data;
         <fieldset>
           <legend>Partições</legend>
           <div id="partitionRows"></div>
+          <!-- FIX: U-01 — área de validação acessível das partições -->
+          <div id="partitionValidation" class="partition-validation" style="display:none; margin-top:10px;" role="status" aria-live="polite"></div>
           <button class="add-row-btn" id="addPartition" type="button">+ adicionar partição</button>
           <p class="hint" style="margin-top:10px;">Informe o intervalo de sítios de cada gene (ex: 1–520). Confira esses números no seu alinhamento — a página não adivinha onde um gene termina e outro começa. Taxas fixas não estão disponíveis por partição; a categoria gamma (+G) definida acima vale para todas.</p>
         </fieldset>
@@ -894,6 +924,13 @@ begin data;
         <div class="field">
           <label for="samplefreq">Frequência de amostragem</label>
           <input type="number" id="samplefreq" value="1000" min="1">
+          <div class="hint">Intervalo entre amostras gravadas na análise.</div>
+        </div>
+        <!-- FIX: C-01 / F-06 — printfreq independente, automático quando vazio -->
+        <div class="field">
+          <label for="printfreq">Frequência de impressão (printfreq)</label>
+          <input type="number" id="printfreq" value="" min="1" step="1" placeholder="Automático">
+          <div class="hint">Frequência de impressão na tela/terminal, não a frequência de amostragem. Vazio = cálculo automático (10 × samplefreq, mínimo 1000).</div>
         </div>
         <div class="field">
           <label for="nruns">Número de análises independentes (nruns)</label>
@@ -910,6 +947,12 @@ begin data;
         <div class="field">
           <label for="temp">Temperatura (temp)</label>
           <input type="number" id="temp" value="0.2" step="0.05" min="0.01" max="1">
+        </div>
+        <!-- FIX: C-03 — stopval configurável pelo usuário -->
+        <div class="field">
+          <label for="stopval">Valor de parada (ASDSF, stopval)</label>
+          <input type="number" id="stopval" value="0.01" step="0.005" min="0.001" max="0.1">
+          <div class="hint">Padrão 0,01. Valores menores são mais rigorosos e podem exigir mais tempo.</div>
         </div>
       </div>
 
@@ -1079,7 +1122,8 @@ begin data;
 
       <div class="runbox" id="runbox">
         <strong id="runboxTitle">Como iniciar a análise com o arquivo baixado</strong>
-        <span id="runboxText"></span>
+        <!-- FIX: O-02 -->
+        <div id="runboxText"></div>
       </div>
     </div>
   </section>
@@ -1088,7 +1132,8 @@ begin data;
 </section>
 
 <!-- TAB: RUN MRBAYES -->
-<section class="tab-panel" id="tab-runner">
+<!-- FIX: U-05 — painel ARIA associado à aba runner -->
+<section class="tab-panel" id="tab-runner" role="tabpanel" aria-labelledby="tabbtn-runner" tabindex="0">
   <div class="wrap">
     <section class="step">
       <div class="step-head"><div class="step-num">01</div><h2>Rodar um arquivo MrBayes</h2></div>
@@ -1182,7 +1227,8 @@ begin data;
 </section>
 
 <!-- TAB: IQ-TREE -->
-<section class="tab-panel" id="tab-iqtree">
+<!-- FIX: U-05 — painel ARIA associado à aba iqtree -->
+<section class="tab-panel" id="tab-iqtree" role="tabpanel" aria-labelledby="tabbtn-iqtree" tabindex="0">
   <div class="wrap">
     <section class="step">
       <div class="step-head"><div class="step-num">01</div><h2>Gerar uma análise IQ-TREE</h2></div>
@@ -1310,7 +1356,8 @@ begin data;
 </section>
 
 <!-- TAB: TRE -> NEWICK -->
-<section class="tab-panel" id="tab-newick">
+<!-- FIX: U-05 — painel ARIA associado à aba newick -->
+<section class="tab-panel" id="tab-newick" role="tabpanel" aria-labelledby="tabbtn-newick" tabindex="0">
   <div class="wrap">
     <section class="step">
       <div class="step-head"><div class="step-num">01</div><h2>Transformar .tre em Newick</h2></div>
@@ -1379,7 +1426,9 @@ begin data;
     nchar: null,
     datatype: null,
     fixCount: 0,
-    warnings: []
+    warnings: [],
+    blockedByAlignment: false, // FIX: F-03 — bloqueia FASTA desalinhado
+    partitionErrors: [] // FIX: U-01 — erros atuais de intervalos de partição
   };
 
   // ---------------- FASTA DETECTION & CONVERSION ----------------
@@ -1408,9 +1457,11 @@ begin data;
     return records.filter(r => r.seq.length > 0 || r.rawName.length > 0);
   }
 
+  /* FIX: F-04 — retorna o nome final e sinaliza qualquer alteração/sufixo de duplicata */
   function sanitizeTaxonName(name, used){
-    let clean = (name || '').trim().replace(/\s+/g, '_');
-    clean = clean.replace(/['"()\[\]{}/\\,;:=*`+<>]/g, '');
+    const original = String(name || '').trim();
+    const normalized = original.replace(/\s+/g, '_');
+    let clean = normalized.replace(/['"()\[\]{}/\\,;:=*`+<>]/g, '');
     clean = clean.replace(/_+/g, '_').replace(/^_+|_+$/g, '');
     if (!clean) clean = 'taxon';
     let finalName = clean;
@@ -1420,7 +1471,7 @@ begin data;
       n++;
     }
     used.add(finalName);
-    return finalName;
+    return { name: finalName, changed: finalName !== original };
   }
 
   function guessSeqDataType(records){
@@ -1452,18 +1503,20 @@ begin data;
 
     const used = new Set();
     records.forEach(r => {
-      const clean = sanitizeTaxonName(r.rawName, used);
-      if (clean !== r.rawName.trim().replace(/\s+/g, '_')){
-        warnings.push(`O nome do táxon "${r.rawName}" continha espaços/caracteres não permitidos no NEXUS e foi convertido para "${clean}".`);
+      const result = sanitizeTaxonName(r.rawName, used); // FIX: F-04
+      if (result.changed){
+        warnings.push(`O nome do táxon "${r.rawName}" foi sanitizado para "${result.name}". Confira se essa alteração preserva a identificação do táxon.`);
       }
-      r.name = clean;
+      r.name = result.name;
     });
 
     const lengths = records.map(r => r.seq.length);
     const maxLen = Math.max(...lengths);
     const minLen = Math.min(...lengths);
-    if (maxLen !== minLen){
-      warnings.push(`As sequências do FASTA não têm todas o mesmo comprimento (de ${minLen} a ${maxLen} caracteres) — isso geralmente indica que elas não estão alinhadas. As mais curtas foram completadas com gaps ("-") no final só para o arquivo abrir; alinhe as sequências (ex: MAFFT, MUSCLE, Clustal) antes de interpretar os resultados da análise.`);
+    const blockedByAlignment = maxLen !== minLen;
+    /* FIX: F-03 — não completar FASTA desalinhado com gaps e sinalizar ação necessária */
+    if (blockedByAlignment){
+      warnings.push(`[AÇÃO NECESSÁRIA] As sequências do FASTA têm comprimentos diferentes (${minLen}–${maxLen}). Alinhe com MAFFT/MUSCLE/Clustal antes de gerar o NEXUS. O download está bloqueado até que você carregue um alinhamento válido.`);
     }
 
     const datatype = guessSeqDataType(records);
@@ -1475,16 +1528,16 @@ begin data;
     lines.push('#NEXUS');
     lines.push('[Convertido automaticamente de FASTA' + (filename ? ' (' + filename + ')' : '') + ']');
     lines.push('begin data;');
-    lines.push(`  dimensions ntax=${records.length} nchar=${maxLen};`);
+    lines.push(`  dimensions ntax=${records.length} nchar=${maxLen};`); // FIX: F-03 — nchar registrado sem alterar comprimentos originais
     lines.push(`  format datatype=${dtLabel} missing=? gap=-;`);
     lines.push('  matrix');
     records.forEach(r => {
-      lines.push('    ' + r.name.padEnd(nameWidth, ' ') + r.seq.toUpperCase().padEnd(maxLen, '-'));
+      lines.push('    ' + r.name.padEnd(nameWidth, ' ') + r.seq.toUpperCase()); // FIX: F-03 — preserva comprimento de cada sequência, sem padding silencioso
     });
     lines.push('  ;');
     lines.push('end;');
 
-    return { nexusText: lines.join('\n') + '\n', warnings };
+    return { nexusText: lines.join('\n') + '\n', warnings, blockedByAlignment }; // FIX: F-03
   }
 
   // ---------------- CLEANING ----------------
@@ -1567,14 +1620,13 @@ begin data;
   function parseInfo(text){
     const info = { taxa: [], ntax: null, nchar: null, datatype: null };
 
-    const dim = text.match(/dimensions[^;]*ntax\s*=\s*(\d+)[^;]*nchar\s*=\s*(\d+)/i)
-             || text.match(/dimensions[^;]*nchar\s*=\s*(\d+)[^;]*ntax\s*=\s*(\d+)/i);
-    if (dim){
-      // handle either order by checking which label preceded which number using named lookups
-      const ntaxMatch = text.match(/ntax\s*=\s*(\d+)/i);
-      const ncharMatch = text.match(/nchar\s*=\s*(\d+)/i);
-      if (ntaxMatch) info.ntax = parseInt(ntaxMatch[1], 10);
-      if (ncharMatch) info.nchar = parseInt(ncharMatch[1], 10);
+    // FIX: F-05 — lê ntax/nchar exclusivamente no bloco dimensions
+    const dimBlock = text.match(/dimensions[^;]*;/i);
+    if (dimBlock){
+      const nt = dimBlock[0].match(/ntax\s*=\s*(\d+)/i);
+      const nc = dimBlock[0].match(/nchar\s*=\s*(\d+)/i);
+      if (nt) info.ntax = parseInt(nt[1], 10);
+      if (nc) info.nchar = parseInt(nc[1], 10);
     }
 
     const typeMatch = text.match(/datatype\s*=\s*(\w+)/i);
@@ -1644,6 +1696,39 @@ begin data;
     processText(txt, 'colado_manualmente.nex');
   });
 
+  /* FIX: U-04 — restaura campos e estado do gerador sem recarregar a página */
+  document.getElementById('btnReset').addEventListener('click', () => {
+    const bayes = document.getElementById('tab-bayes');
+    Object.assign(state, { filename:null, cleaned:'', taxa:[], ntax:null, nchar:null, datatype:null, fixCount:0, warnings:[], blockedByAlignment:false, partitionErrors:[] });
+    bayes.querySelectorAll('input').forEach(el => {
+      if (el.type === 'file') el.value = '';
+      else if (el.type === 'checkbox' || el.type === 'radio') el.checked = el.defaultChecked;
+      else el.value = el.defaultValue;
+    });
+    bayes.querySelectorAll('select').forEach(sel => {
+      Array.from(sel.options).forEach(opt => { opt.selected = opt.defaultSelected; });
+      if (sel.multiple) sel.selectedIndex = -1;
+    });
+    bayes.querySelectorAll('textarea').forEach(el => { el.value = el.defaultValue; });
+    document.getElementById('report').classList.remove('show');
+    document.getElementById('outgroupSelect').innerHTML = '';
+    document.getElementById('partitionRows').innerHTML = '';
+    document.getElementById('partitionValidation').innerHTML = '';
+    document.getElementById('partitionValidation').style.display = 'none';
+    document.getElementById('singleModelBlock').style.display = 'block';
+    document.getElementById('partitionsBlock').style.display = 'none';
+    document.getElementById('fileChip').textContent = '';
+    document.getElementById('pasteArea').value = '';
+    document.getElementById('fileInput').value = '';
+    updateInstallUI();
+    updateNpSuggestion();
+    updatePlatformUI();
+    updateWslMpiVisibility();
+    renderOutgroupOptions();
+    updateModelFieldsVisibility();
+    updatePreview();
+  });
+
   function handleFile(file){
     const reader = new FileReader();
     reader.onload = () => processText(reader.result, file.name);
@@ -1651,6 +1736,8 @@ begin data;
   }
 
   function processText(raw, filename){
+    /* FIX: F-03 — cada novo arquivo reavalia o bloqueio, sem herdar o estado anterior */
+    state.blockedByAlignment = false;
     const format = detectFormat(raw, filename);
     let fastaWarnings = [];
     let sourceText = raw;
@@ -1659,6 +1746,7 @@ begin data;
       const conv = convertFastaToNexus(raw, filename);
       sourceText = conv.nexusText;
       fastaWarnings = conv.warnings;
+      state.blockedByAlignment = Boolean(conv.blockedByAlignment); // FIX: F-03
     }
 
     const { cleaned, warnings, fixCount } = cleanNexus(sourceText);
@@ -1686,15 +1774,16 @@ begin data;
 
     const kindSelect = document.getElementById('dataKind');
     kindSelect.value = guessDataKind(state.datatype);
+    // FIX: P-01 — updateModelFieldsVisibility já agenda a atualização do preview
     updateModelFieldsVisibility();
-    updatePreview();
   }
 
   function guessDataKind(dt){
     if (!dt) return 'dna';
     const d = dt.toUpperCase();
     if (d.includes('PROTEIN')) return 'protein';
-    if (d.includes('STANDARD') || d.includes('RESTRICTION')) return 'standard';
+    if (d.includes('RESTRICTION')) return 'restriction';
+    if (d.includes('STANDARD')) return 'standard';
     return 'dna';
   }
 
@@ -1721,8 +1810,8 @@ begin data;
     } else {
       state.warnings.forEach(w => {
         const div = document.createElement('div');
-        div.className = 'warn-item';
-        div.innerHTML = '<span class="dot">●</span><span>' + escapeHtml(w) + '</span>';
+        div.className = 'warn-item' + (w.startsWith('[AÇÃO NECESSÁRIA]') ? ' action-needed' : '');
+        div.innerHTML = safeHTML`<span class="dot">●</span><span>${w}</span>`; // FIX: S-02 / F-03
         warnList.appendChild(div);
       });
     }
@@ -1737,9 +1826,12 @@ begin data;
       sel.appendChild(opt);
     });
     const hint = sel.nextElementSibling;
-    hint.textContent = state.taxa.length
-      ? state.taxa.length + ' táxon(ns) detectado(s). Segure Ctrl/Cmd para selecionar mais de um.'
-      : 'Nenhum táxon detectado automaticamente — confira o arquivo carregado.';
+    /* FIX: U-07 — mensagem de outgroup acompanha os estados vazio, carregado e identificado */
+    hint.textContent = !state.filename
+      ? 'Nenhum arquivo carregado ainda — a lista aparece depois do passo 1.'
+      : state.taxa.length
+        ? state.taxa.length + ' táxon(ns) detectado(s). Segure Ctrl/Cmd para selecionar mais de um.'
+        : 'Arquivo carregado, mas nenhum táxon foi identificado automaticamente — confira a matriz NEXUS.';
   }
 
   function suggestFilename(){
@@ -1747,9 +1839,20 @@ begin data;
     document.getElementById('outFilename').value = base + '_mrbayes.nex';
   }
 
+  /* FIX: S-02 — escape de todos os caracteres especiais antes de inserir texto em HTML */
   function escapeHtml(s){
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
+
+  /* FIX: S-02 — template helper que escapa automaticamente cada valor interpolado */
+  const safeHTML = (strings, ...values) =>
+    strings.reduce((acc, part, i) => acc + part + (i < values.length ? escapeHtml(String(values[i])) : ''), '');
+
+  /* FIX: S-05 — remove metacaracteres perigosos de comandos antes de gerar scripts */
+  const sanitizeCmd = s => String(s ?? '').replace(/[&|<>;`$(){}%^!"'\r\n]/g, '').trim();
+  /* FIX: S-05 — nome seguro para referências em scripts shell/batch; preserva extensão e espaços */
+  const sanitizeScriptFilename = s => String(s ?? '').replace(/[&|<>;`$%^!\r\n"']/g, '').replace(/[\/\\]/g, '_').replace(/\.\./g, '_').trim();
 
   // ---------------- MODEL DEFINITIONS ----------------
   const CLASSICAL_NAMES = {
@@ -1799,11 +1902,15 @@ begin data;
 
   function updateModelFieldsVisibility(){
     const kind = document.getElementById('dataKind').value;
-    document.getElementById('dnaModelField').style.display = kind === 'dna' ? '' : 'none';
-    document.getElementById('baseFreqField').style.display = kind === 'dna' ? '' : 'none';
-    document.getElementById('proteinModelField').style.display = kind === 'protein' ? '' : 'none';
-    document.getElementById('codingField').style.display = kind === 'standard' ? '' : 'none';
-    document.getElementById('namedModelsHint').style.display = kind === 'dna' ? '' : 'none';
+    const mixed = kind === 'mixed';
+    const standardLike = kind === 'standard' || kind === 'restriction';
+    /* FIX: C-06 — restriction usa codificação standard; mixed exibe painéis mas bloqueia saída inválida */
+    document.getElementById('dnaModelField').style.display = (kind === 'dna' || mixed) ? '' : 'none';
+    document.getElementById('baseFreqField').style.display = (kind === 'dna' || mixed) ? '' : 'none';
+    document.getElementById('proteinModelField').style.display = (kind === 'protein' || mixed) ? '' : 'none';
+    document.getElementById('codingField').style.display = standardLike ? '' : 'none';
+    document.getElementById('namedModelsHint').style.display = (kind === 'dna' || mixed) ? '' : 'none';
+    document.getElementById('mixedDataHint').style.display = mixed ? 'block' : 'none';
 
     const ratesVal = document.getElementById('rates').value;
     document.getElementById('ngammacatField').style.display = (ratesVal === 'gamma' || ratesVal === 'invgamma') ? '' : 'none';
@@ -1823,13 +1930,15 @@ begin data;
       rebuildPartitionModelFields(row, kind);
     });
 
-    updatePreview();
+    // FIX: P-01 — respeita o debounce ao atualizar o preview após mudar campos
+    schedulePreview();
   }
 
   function rebuildPartitionModelFields(row, kind){
     const oldNst = row.querySelector('.p-nst');
     const oldFreq = row.querySelector('.p-freq');
     const oldProtein = row.querySelector('.p-protein');
+    const standardLike = kind === 'standard' || kind === 'restriction'; // FIX: C-06
 
     if (kind === 'protein'){
       if (oldNst) oldNst.remove();
@@ -1838,26 +1947,30 @@ begin data;
         const sel = document.createElement('select');
         sel.className = 'p-protein';
         sel.innerHTML = PROTEIN_MODEL_OPTIONS_HTML;
-        sel.addEventListener('input', updatePreview);
-        sel.addEventListener('change', updatePreview);
+        sel.addEventListener('input', schedulePreview);
+        sel.addEventListener('change', schedulePreview);
         row.insertBefore(sel, row.querySelector('.p-rates'));
       }
+    } else if (standardLike){
+      if (oldNst) oldNst.remove();
+      if (oldFreq) oldFreq.remove();
+      if (oldProtein) oldProtein.remove();
     } else {
       if (oldProtein) oldProtein.remove();
       if (!row.querySelector('.p-nst')){
         const selNst = document.createElement('select');
         selNst.className = 'p-nst';
         selNst.innerHTML = NST_OPTIONS_HTML;
-        selNst.addEventListener('input', updatePreview);
-        selNst.addEventListener('change', updatePreview);
+        selNst.addEventListener('input', schedulePreview);
+        selNst.addEventListener('change', schedulePreview);
         row.insertBefore(selNst, row.querySelector('.p-rates'));
       }
       if (!row.querySelector('.p-freq')){
         const selFreq = document.createElement('select');
         selFreq.className = 'p-freq';
         selFreq.innerHTML = FREQ_OPTIONS_HTML;
-        selFreq.addEventListener('input', updatePreview);
-        selFreq.addEventListener('change', updatePreview);
+        selFreq.addEventListener('input', schedulePreview);
+        selFreq.addEventListener('change', schedulePreview);
         row.insertBefore(selFreq, row.querySelector('.p-rates'));
       }
     }
@@ -1870,7 +1983,7 @@ begin data;
 
   document.getElementById('useFixedRates').addEventListener('change', function(){
     document.getElementById('fixedRatesBlock').style.display = this.checked ? 'block' : 'none';
-    updatePreview();
+    schedulePreview();
   });
 
   // ---------------- PARTITIONS ----------------
@@ -1887,13 +2000,14 @@ begin data;
       addPartitionRow('gene1', 1, state.nchar || '');
       addPartitionRow('gene2', '', '');
     }
-    updatePreview();
+    schedulePreview();
   });
 
   function addPartitionRow(name, start, end){
     const row = document.createElement('div');
     row.className = 'part-row';
-    row.innerHTML = `
+    /* FIX: S-02 — valores dinâmicos de partição escapados ao compor o HTML */
+    row.innerHTML = safeHTML`
       <input type="text" class="p-name" placeholder="nome da partição" value="${name || ''}">
       <input type="number" class="p-start" placeholder="início" min="1" value="${start ?? ''}">
       <input type="number" class="p-end" placeholder="fim" min="1" value="${end ?? ''}">
@@ -1905,8 +2019,8 @@ begin data;
       </select>
       <button type="button" class="icon-btn" title="remover partição">✕</button>
     `;
-    row.querySelector('.icon-btn').addEventListener('click', () => { row.remove(); updatePreview(); });
-    row.querySelectorAll('input, select').forEach(el => el.addEventListener('input', updatePreview));
+    row.querySelector('.icon-btn').addEventListener('click', () => { row.remove(); schedulePreview(); });
+    row.querySelectorAll('input, select').forEach(el => { el.addEventListener('input', schedulePreview); el.addEventListener('change', schedulePreview); }); // PERF
     rebuildPartitionModelFields(row, document.getElementById('dataKind').value);
     partitionRows.appendChild(row);
   }
@@ -1915,17 +2029,51 @@ begin data;
     addPartitionRow('', '', '');
   });
 
+  // FIX: P-02 — separa validação de campos da coleta usada para gerar o bloco
+  function validatePartitions(){
+    const rows = [...partitionRows.querySelectorAll('.part-row')];
+    const bad = [];
+    if (rows.length === 0) bad.push('Adicione ao menos uma partição.');
+    rows.forEach((row, i) => {
+      const startRaw = row.querySelector('.p-start').value.trim();
+      const endRaw = row.querySelector('.p-end').value.trim();
+      const start = Number(startRaw), end = Number(endRaw);
+      if (!startRaw || !endRaw || !Number.isInteger(start) || !Number.isInteger(end)){
+        bad.push(`Partição ${i+1}: início/fim vazios ou não numéricos`);
+      } else if (start < 1 || end < 1){
+        bad.push(`Partição ${i+1}: início e fim devem ser maiores que zero`);
+      } else if (start > end){
+        bad.push(`Partição ${i+1}: início (${start}) maior que fim (${end})`);
+      } else if (state.nchar && end > state.nchar){
+        bad.push(`Partição ${i+1}: fim (${end}) excede nchar (${state.nchar})`);
+      }
+    });
+    state.partitionErrors = bad;
+    const validation = document.getElementById('partitionValidation');
+    if (bad.length){
+      validation.innerHTML = bad.map(message => safeHTML`<div class="warn-item"><span class="dot">●</span>${message}</div>`).join('');
+      validation.style.display = 'block';
+    } else {
+      validation.innerHTML = '';
+      validation.style.display = 'none';
+    }
+  }
+
+  // FIX: P-02 — coleta sem validar/alterar o DOM; FIX: O-01 — descarta linhas totalmente em branco
   function collectPartitions(){
     const rows = [...partitionRows.querySelectorAll('.part-row')];
-    return rows.map(r => ({
-      name: r.querySelector('.p-name').value.trim() || 'partX',
+    return rows
+      // FIX: O-01 — mantém linhas parcialmente preenchidas para que a validação mostre o erro
+      .filter(r => r.querySelector('.p-start').value.trim() || r.querySelector('.p-end').value.trim())
+      .map((r, i) => ({
+      name: r.querySelector('.p-name').value.trim() || `part${i+1}`,
       start: r.querySelector('.p-start').value.trim(),
       end: r.querySelector('.p-end').value.trim(),
       nst: r.querySelector('.p-nst') ? r.querySelector('.p-nst').value : '2',
       freq: r.querySelector('.p-freq') ? r.querySelector('.p-freq').value : 'estimate',
       protein: r.querySelector('.p-protein') ? r.querySelector('.p-protein').value : 'jones',
       rates: r.querySelector('.p-rates').value
-    })).filter(p => p.start && p.end);
+    }));
   }
 
   // ---------------- MODEL LINE BUILDERS ----------------
@@ -1966,11 +2114,16 @@ begin data;
     const useLog = document.getElementById('useLog').checked;
     const useSumm = document.getElementById('useSumm').checked;
     const useStoprule = document.getElementById('useStoprule').checked;
+    // FIX: C-03 — stopval lido do campo de configuração
+    const stopval = document.getElementById('stopval').value || '0.01';
     const dataKind = document.getElementById('dataKind').value;
     const ngammacat = document.getElementById('ngammacat').value || '4';
 
     const ngen = document.getElementById('ngen').value || '1000000';
     const samplefreq = document.getElementById('samplefreq').value || '1000';
+    // FIX: C-01 — printfreq configurável; vazio calcula 10 × samplefreq, mínimo 1000
+    const printfreqInput = document.getElementById('printfreq').value.trim();
+    const printfreq = printfreqInput ? Math.max(parseInt(printfreqInput, 10) || 1, 1) : Math.max((parseInt(samplefreq, 10) || 1000) * 10, 1000);
     const nruns = document.getElementById('nruns').value || '2';
     const nchains = document.getElementById('nchains').value || '4';
     const burninfrac = document.getElementById('burninfrac').value || '0.25';
@@ -1997,11 +2150,11 @@ begin data;
         parts.forEach((p, i) => {
           const idx = i + 1;
           if (dataKind === 'protein') proteinModelLines(idx, p.protein, p.rates, ngammacat).forEach(push);
-          else if (dataKind === 'standard') standardModelLines(idx, p.rates, document.getElementById('coding').value, ngammacat).forEach(push);
+          else if (dataKind === 'standard' || dataKind === 'restriction') standardModelLines(idx, p.rates, document.getElementById('coding').value, ngammacat).forEach(push); // FIX: C-06
           else dnaModelLines(idx, p.nst, p.freq, p.rates, ngammacat, null).forEach(push);
         });
         if (dataKind === 'protein') push('    unlink aamodel=(all) shape=(all) pinvar=(all);');
-        else if (dataKind === 'standard') push('    unlink shape=(all);');
+        else if (dataKind === 'standard' || dataKind === 'restriction') push('    unlink shape=(all);'); // FIX: C-06
         else push('    unlink statefreq=(all) revmat=(all) shape=(all) pinvar=(all) tratio=(all);');
         push('    prset applyto=(all) ratepr=variable;');
       }
@@ -2011,7 +2164,7 @@ begin data;
         const modelKey = document.getElementById('modelProtein').value;
         push('    [Matriz de substituição de aminoácidos]');
         proteinModelLines(null, modelKey, ratesVal, ngammacat).forEach(push);
-      } else if (dataKind === 'standard'){
+      } else if (dataKind === 'standard' || dataKind === 'restriction'){ // FIX: C-06
         const codingVal = document.getElementById('coding').value;
         push('    [Modelo para dados discretos/morfológicos]');
         standardModelLines(null, ratesVal, codingVal, ngammacat).forEach(push);
@@ -2040,8 +2193,15 @@ begin data;
 
     push('');
     push('    [Parâmetros da MCMC]');
-    let mcmcp = `    mcmcp ngen=${ngen} samplefreq=${samplefreq} printfreq=${samplefreq} diagnfreq=${Math.max(parseInt(samplefreq)||1000, 5000)} nruns=${nruns} nchains=${nchains} temp=${temp} burninfrac=${burninfrac} relburnin=yes`;
-    if (useStoprule) mcmcp += ' stoprule=yes stopval=0.01';
+    // FIX: P-03 — diagnfreq proporcional a ngen, evitando diagnósticos excessivamente espaçados
+    const ngenN = parseInt(ngen, 10) || 1000000;
+    const samplefreqN = parseInt(samplefreq, 10) || 1000;
+    const diagnfreq = Math.max(
+      Math.min(samplefreqN * 10, Math.floor(ngenN / 10)),
+      5000
+    );
+    let mcmcp = `    mcmcp ngen=${ngen} samplefreq=${samplefreq} printfreq=${printfreq} diagnfreq=${diagnfreq} nruns=${nruns} nchains=${nchains} temp=${temp} burninfrac=${burninfrac} relburnin=yes`;
+    if (useStoprule) mcmcp += ` stoprule=yes stopval=${stopval}`; // FIX: C-03
     mcmcp += ';';
     push(mcmcp);
     push('    mcmc;');
@@ -2062,14 +2222,27 @@ begin data;
     return lines.join('\n');
   }
 
+  /* FIX: F-02 — escapa o texto antes de aplicar apenas marcação HTML confiável */
   function highlight(code){
-    return escapeHtml(code)
+    const escaped = escapeHtml(code);
+    return escaped
       .replace(/(\[[^\]]*\])/g, '<span class="cm">$1</span>')
       .replace(/^(\s*)(begin|end|mcmc|mcmcp|lset|prset|charset|partition|set|outgroup|taxset|log|sump|sumt|unlink)\b/gm,
         (m, sp, kw) => sp + '<span class="kw">' + kw + '</span>')
       .replace(/(=\s*)([\w.,()]+)/g, (m, eq, val) => eq + '<span class="amber">' + val + '</span>');
   }
 
+  // FIX: O-03 — documenta o atraso intencional da validação associado ao debounce
+  /* PERF: debounce de updatePreview. Efeito colateral: state.partitionErrors e
+     #partitionValidation só refletem o DOM atualizado ~40 ms após a última
+     alteração. Não leia state.partitionErrors fora de updatePreview(). */
+  let _previewTimer = null;
+  function schedulePreview(){
+    clearTimeout(_previewTimer);
+    _previewTimer = setTimeout(updatePreview, 40);
+  }
+
+  /* FIX: F-03 / C-06 / U-01 — downloads só são habilitados com entrada e configuração válidas */
   function updatePreview(){
     const pre = document.getElementById('previewCode');
     const btn = document.getElementById('btnDownload');
@@ -2080,24 +2253,39 @@ begin data;
       scriptBtn.disabled = true;
       return;
     }
-    const block = buildBlock();
-    pre.innerHTML = highlight(block);
-    btn.disabled = false;
-    scriptBtn.disabled = false;
+    const mixedUnsupported = document.getElementById('dataKind').value === 'mixed';
+    // FIX: P-02 — valida uma vez por renderização; buildBlock apenas coleta os campos
+    if (document.getElementById('usePartitions').checked) validatePartitions();
+    else {
+      state.partitionErrors = [];
+      document.getElementById('partitionValidation').style.display = 'none';
+      document.getElementById('partitionValidation').innerHTML = '';
+    }
+    if (mixedUnsupported){
+      pre.textContent = 'A matriz mista DNA + morfologia ainda não pode ser gerada com segurança por esta interface. Defina os tipos e intervalos em um NEXUS apropriado e selecione DNA, proteína ou standard conforme o bloco de dados.';
+    } else {
+      pre.innerHTML = highlight(buildBlock());
+    }
+    const invalidPartitions = document.getElementById('usePartitions').checked && state.partitionErrors.length > 0;
+    const canDownload = !state.blockedByAlignment && !mixedUnsupported && !invalidPartitions;
+    btn.disabled = !canDownload;
+    scriptBtn.disabled = !canDownload;
     updateRunbox();
   }
 
   // wire up every control to refresh the preview live
-   ['dataKind','nstStructure','baseFreq','modelProtein','coding','rates','ngammacat','ngen','samplefreq','nruns','nchains','burninfrac','temp',
+   // FIX: F-07 — outFilename também atualiza o exemplo de comando em updateRunbox()
+   ['dataKind','nstStructure','baseFreq','modelProtein','coding','rates','ngammacat','ngen','samplefreq','printfreq','stopval','nruns','nchains','burninfrac','temp',
     'useStoprule','useAutoclose','useLog','useSumm','outgroupSelect','outFilename',
     'rateAC','rateAG','rateAT','rateCG','rateCT','rateGT',
     'execWin','execUnix','execMpi','mpirunCmd','npCount',
     'execWsl','mpirunCmdWsl','npCountWsl','wslUseMpi']
    .forEach(id => {
      const el = document.getElementById(id);
-     el.addEventListener('input', updatePreview);
-     el.addEventListener('change', updatePreview);
-   });
+     if (!el) return;
+     el.addEventListener('input', schedulePreview);
+     el.addEventListener('change', schedulePreview);
+   }); // PERF / F-06 / C-03
 
   // WSL: alternar campos de MPI e atualizar preview
   document.getElementById('wslUseMpi').addEventListener('change', () => {
@@ -2150,39 +2338,49 @@ begin data;
   document.getElementById('nruns').addEventListener('input', updateNpSuggestion);
   document.getElementById('nchains').addEventListener('input', updateNpSuggestion);
 
+  /* FIX: U-06 — impede caminhos relativos e caracteres de controle/metacaracteres em nome de saída */
   function outputFilename(){
-    const f = document.getElementById('outFilename').value.trim() || 'analise_mrbayes.nex';
-    return f.endsWith('.nex') || f.endsWith('.nexus') ? f : f + '.nex';
+    let f = (document.getElementById('outFilename').value.trim() || 'analise_mrbayes.nex')
+      .replace(/[\/\\:*?"<>|&;`$%^!\r\n]/g, '_')
+      .replace(/\.\./g, '_');
+    if (!/\.(nex|nexus)$/i.test(f)) f += '.nex';
+    return f || 'analise_mrbayes.nex';
   }
 
   function updateRunbox(){
     const val = currentPlatform();
     const title = document.getElementById('runboxTitle');
     const box = document.getElementById('runboxText');
+    // FIX: D-02 — compara o nome informado antes da sanitização com o nome final
+    const originalFname = document.getElementById('outFilename').value.trim();
     const fname = outputFilename();
 
     if (val === 'win'){
       const exe = document.getElementById('execWin').value.trim() || 'mb.exe';
       title.textContent = 'Como iniciar no Windows';
-      box.innerHTML = `Dê dois cliques no <code>rodar_analise.bat</code> que você baixou, ou abra o Prompt de Comando na pasta e rode <code>${escapeHtml(exe)} ${escapeHtml(fname)}</code>.`;
+      box.innerHTML = safeHTML`Dê dois cliques no <code>rodar_analise.bat</code> que você baixou, ou abra o Prompt de Comando na pasta e rode <code>${exe} ${fname}</code>.`; // FIX: S-02
     } else if (val === 'unix'){
       const exe = document.getElementById('execUnix').value.trim() || 'mb';
       title.textContent = 'Como iniciar no Ubuntu/Linux';
-      box.innerHTML = `No terminal, dentro da pasta do arquivo, rode <code>${escapeHtml(exe)} ${escapeHtml(fname)}</code> — ou use o <code>rodar_analise.sh</code> baixado.`;
+      box.innerHTML = safeHTML`No terminal, dentro da pasta do arquivo, rode <code>${exe} ${fname}</code> — ou use o <code>rodar_analise.sh</code> baixado.`; // FIX: S-02
     } else if (val === 'mpi'){
-      const exe = document.getElementById('execMpi').value.trim() || 'mb';
-      const mpirun = document.getElementById('mpirunCmd').value.trim() || 'mpirun';
-      const np = document.getElementById('npCount').value || '8';
+      const exe = sanitizeCmd(document.getElementById('execMpi').value) || 'mb'; // FIX: S-05
+      const mpirun = sanitizeCmd(document.getElementById('mpirunCmd').value) || 'mpirun'; // FIX: S-05
+      const np = String(parseInt(document.getElementById('npCount').value, 10) || 8);
       title.textContent = 'Como iniciar no Ubuntu com MPI';
-      box.innerHTML = `No terminal do Ubuntu, rode <code>${escapeHtml(mpirun)} -np ${escapeHtml(np)} ${escapeHtml(exe)} ${escapeHtml(fname)}</code> — ou use o <code>rodar_analise_mpi.sh</code> baixado.`;
+      box.innerHTML = safeHTML`No terminal do Ubuntu, rode <code>${mpirun} -np ${np} ${exe} ${fname}</code> — ou use o <code>rodar_analise_mpi.sh</code> baixado.`; // FIX: S-02
     } else {
       const useMpi = document.getElementById('wslUseMpi').checked;
       const np = document.getElementById('npCountWsl').value || '8';
       const exe = document.getElementById('execWsl').value.trim() || 'mb';
       title.textContent = 'Como iniciar no Windows com WSL';
       box.innerHTML = useMpi
-        ? `O <code>.bat</code> baixado entra na pasta correta, verifica o WSL/MrBayes e executa <code>mpirun -np ${escapeHtml(np)} ${escapeHtml(exe)} ${escapeHtml(fname)}</code>.`
-        : `O <code>.bat</code> baixado entra na pasta correta e executa <code>${escapeHtml(exe)} ${escapeHtml(fname)}</code> dentro do WSL.`;
+        ? safeHTML`O <code>.bat</code> baixado entra na pasta correta, verifica o WSL/MrBayes e executa <code>${sanitizeCmd(document.getElementById('mpirunCmdWsl').value) || 'mpirun'} -np ${np} ${exe} ${fname}</code>.`
+        : safeHTML`O <code>.bat</code> baixado entra na pasta correta e executa <code>${exe} ${fname}</code> dentro do WSL.`; // FIX: S-02 / S-05
+    }
+    // FIX: D-02 — alerta se o usuário precisa renomear o arquivo para coincidir com o comando
+    if (originalFname !== fname){
+      box.insertAdjacentHTML('beforeend', safeHTML`<p class="hint"><strong>Atenção:</strong> O nome do arquivo no disco precisa coincidir com o nome mostrado no comando; renomeie se necessário.</p>`);
     }
   }
 
@@ -2206,24 +2404,24 @@ begin data;
     let content, outName;
 
     if (val === 'win'){
-      const exe = document.getElementById('execWin').value.trim() || 'mb.exe';
+      const exe = sanitizeCmd(document.getElementById('execWin').value) || 'mb.exe'; // FIX: S-05
       content = `@echo off\r\n${exe} "${fname}"\r\npause\r\n`;
       outName = 'rodar_analise.bat';
     } else if (val === 'unix'){
-      const exe = document.getElementById('execUnix').value.trim() || 'mb';
+      const exe = sanitizeCmd(document.getElementById('execUnix').value) || 'mb'; // FIX: S-05
       content = `#!/bin/bash\nset -e\ncd "$(dirname "$0")"\n${exe} "${fname}"\n`;
       outName = 'rodar_analise.sh';
     } else if (val === 'mpi'){
-      const exe = document.getElementById('execMpi').value.trim() || 'mb';
-      const mpirun = document.getElementById('mpirunCmd').value.trim() || 'mpirun';
-      const np = document.getElementById('npCount').value || '8';
+      const exe = sanitizeCmd(document.getElementById('execMpi').value) || 'mb'; // FIX: S-05
+      const mpirun = sanitizeCmd(document.getElementById('mpirunCmd').value) || 'mpirun'; // FIX: S-05
+      const np = String(parseInt(document.getElementById('npCount').value, 10) || 8);
       content = `#!/bin/bash\nset -e\ncd "$(dirname "$0")"\n${mpirun} -np ${np} ${exe} "${fname}"\n`;
       outName = 'rodar_analise_mpi.sh';
     } else {
       // WSL — .bat inteligente: detecta núcleos, instala se faltar, roda com -np ótimo
       const useMpi = document.getElementById('wslUseMpi').checked;
-      const exe = document.getElementById('execWsl').value.trim() || 'mb';
-      const requestedNp = document.getElementById('npCountWsl').value || '8';
+      const exe = sanitizeCmd(document.getElementById('execWsl').value) || 'mb'; // FIX: S-05
+      const requestedNp = String(parseInt(document.getElementById('npCountWsl').value, 10) || 8);
       const nruns = document.getElementById('nruns').value || '2';
       const nchains = document.getElementById('nchains').value || '4';
       const chainsTotal = (parseInt(nruns,10) || 2) * (parseInt(nchains,10) || 4);
@@ -2236,7 +2434,7 @@ begin data;
       linhas.push('');
       linhas.push(`set "NEXFILE=${fname}"`);
       linhas.push(`set "MB_EXE=${exe}"`);
-      linhas.push(`set "MPIRUN=${document.getElementById('mpirunCmdWsl').value.trim() || 'mpirun'}"`);
+      linhas.push(`set "MPIRUN=${sanitizeCmd(document.getElementById('mpirunCmdWsl').value) || 'mpirun'}"`); // FIX: S-05
       linhas.push(`set "REQ_NP=${requestedNp}"`);
       linhas.push(`set "CHAINS_TOTAL=${chainsTotal}"`);
       linhas.push('');
@@ -2271,12 +2469,13 @@ begin data;
       linhas.push('echo   Nucleos detectados no WSL : %NPROC%');
       linhas.push('echo   Cadeias totais (nruns x nchains): %CHAINS_TOTAL%');
       linhas.push('');
-      linhas.push('REM ---- 4) Calcula -np otimo = min(NPROC, CHAINS_TOTAL) ----');
+      linhas.push('REM FIX: C-10 — REQ_NP é limite máximo, nunca número fixo');
       linhas.push('set /a NP_OPT=%NPROC%');
       linhas.push('if %CHAINS_TOTAL% LSS %NP_OPT% set /a NP_OPT=%CHAINS_TOTAL%');
-      linhas.push('if %REQ_NP% LSS %NP_OPT% set /a NP_OPT=%REQ_NP%');
+      linhas.push('if %NP_OPT% GTR %REQ_NP% set /a NP_OPT=%REQ_NP%');
       linhas.push('if %NP_OPT% LSS 1 set /a NP_OPT=1');
       linhas.push('echo   Processos MPI que serao usados: %NP_OPT%');
+      linhas.push('echo   Limite maximo informado pelo usuario: %REQ_NP%');
       linhas.push('echo.');
       linhas.push('');
       linhas.push('REM ---- 5) MrBayes instalado? ----');
@@ -2456,8 +2655,12 @@ begin data;
   appTabs.forEach(tab => {
     tab.addEventListener('click', () => {
       const target = tab.dataset.tab;
-      appTabs.forEach(t => t.classList.toggle('active', t === tab));
-      tabPanels.forEach(panel => panel.classList.toggle('active', panel.id === 'tab-' + target));
+      appTabs.forEach(t => {
+        const selected = t === tab;
+        t.classList.toggle('active', selected);
+        t.setAttribute('aria-selected', selected ? 'true' : 'false');
+      });
+      tabPanels.forEach(panel => panel.classList.toggle('active', panel.id === 'tab-' + target)); // FIX: U-05
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   });
@@ -2515,20 +2718,14 @@ begin data;
     });
   }
 
+  /* FIX: S-04 — usa exclusivamente Clipboard API; falha exige cópia manual */
   async function copyText(text){
     try{
+      if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') return false;
       await navigator.clipboard.writeText(text);
       return true;
     }catch(err){
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.position='fixed';
-      ta.style.opacity='0';
-      document.body.appendChild(ta);
-      ta.select();
-      const ok = document.execCommand('copy');
-      document.body.removeChild(ta);
-      return ok;
+      return false;
     }
   }
 
@@ -2545,8 +2742,9 @@ begin data;
     const output = document.getElementById('runnerOutput');
     const preview = document.getElementById('runnerCommandPreview');
     const platform = document.getElementById('runnerPlatform').value;
-    const exe = document.getElementById('runnerExe').value.trim() || (platform === 'win' ? 'mb.exe' : 'mb');
-    const fname = getRunnerFileName();
+    const exe = sanitizeCmd(document.getElementById('runnerExe').value) || (platform === 'win' ? 'mb.exe' : 'mb'); // FIX: S-05
+    const rawFname = getRunnerFileName();
+    const fname = sanitizeScriptFilename(rawFname); // FIX: S-05
     const useMpi = document.getElementById('runnerMpi').value === 'yes';
     const np = parseInt(document.getElementById('runnerNp').value,10) || 4;
 
@@ -2569,7 +2767,7 @@ begin data;
     if (runnerState.file){
       const report = document.getElementById('runnerReport');
       report.classList.add('show');
-      report.innerHTML = `<span class="status-ok">Arquivo carregado:</span> ${escapeHtml(fname)} — ${runnerState.text.length.toLocaleString('pt-BR')} caracteres.`;
+      report.innerHTML = safeHTML`<span class="status-ok">Arquivo carregado:</span> ${fname} — ${runnerState.text.length.toLocaleString('pt-BR')} caracteres.${rawFname !== fname ? ' Renomeie o arquivo no disco para o nome seguro mostrado no comando antes de executar.' : ''}`; // FIX: S-02 / S-05
     }
     return {platform, exe, fname, useMpi, np, command};
   }
@@ -2657,7 +2855,7 @@ begin data;
     }catch(err){
       const r = document.getElementById('runnerReport');
       r.classList.add('show');
-      r.innerHTML = `<span class="status-warn">Erro:</span> ${escapeHtml(err.message || String(err))}`;
+      r.innerHTML = safeHTML`<span class="status-warn">Erro:</span> ${err.message || String(err)}`; // FIX: S-02
     }
   });
   ['runnerPlatform','runnerExe','runnerMpi','runnerNp'].forEach(id => {
@@ -2673,7 +2871,7 @@ begin data;
     if (!runnerState.file) return;
     const ok = await copyText(updateRunnerCommand().command);
     const btn = document.getElementById('btnRunnerCommand');
-    btn.textContent = ok ? 'Comando copiado' : 'Não foi possível copiar';
+    btn.textContent = ok ? 'Comando copiado' : 'Selecione e copie manualmente (Ctrl+C)';
     setTimeout(() => btn.textContent = 'Copiar comando', 1400);
   });
 
@@ -2718,18 +2916,19 @@ begin data;
 
   function iqCommandConfig(){
     const file = iqState.file;
-    const fname = file ? file.name : 'alinhamento.fasta';
-    const executable = document.getElementById('iqExecutable').value.trim() || 'iqtree2';
+    const rawFname = file ? file.name : 'alinhamento.fasta';
+    const fname = sanitizeScriptFilename(rawFname); // FIX: S-05
+    const executable = sanitizeCmd(document.getElementById('iqExecutable').value) || 'iqtree2'; // FIX: S-05
     const datatype = document.getElementById('iqDataType').value;
     const model = document.getElementById('iqModel').value;
     const bb = parseInt(document.getElementById('iqBootstrap').value,10) || 0;
     const alrt = parseInt(document.getElementById('iqAlrt').value,10) || 0;
     const threads = document.getElementById('iqThreads').value;
     const ntmax = document.getElementById('iqNtMax').value.trim();
-    const prefix = (document.getElementById('iqPrefix').value.trim() || baseName(fname)).replace(/\s+/g,'_');
-    const outgroup = document.getElementById('iqOutgroup').value.trim();
+    const prefix = sanitizeScriptFilename((document.getElementById('iqPrefix').value.trim() || baseName(fname)).replace(/\s+/g,'_')) || 'iqtree_analysis'; // FIX: S-05
+    const outgroup = sanitizeScriptFilename(document.getElementById('iqOutgroup').value.trim()); // FIX: S-05
     const partMode = document.getElementById('iqPartitionMode').value;
-    const partName = iqState.partitionFile ? iqState.partitionFile.name : '';
+    const partName = iqState.partitionFile ? sanitizeScriptFilename(iqState.partitionFile.name) : ''; // FIX: S-05
 
     const args = [`-s "${fname}"`];
     if (datatype !== 'auto') args.push(`-st ${datatype}`);
@@ -2762,7 +2961,7 @@ begin data;
     if (iqState.file){
       const stats = inferIqFileStats(iqState.text, iqState.file.name);
       report.classList.add('show');
-      report.innerHTML = `<span class="status-ok">Entrada:</span> ${escapeHtml(iqState.file.name)} · formato ${escapeHtml(stats.format)}${stats.taxa!==null?' · '+stats.taxa+' táxon(ns)':''}${stats.nchar!==null?' · '+stats.nchar+' sítios':''}.`;
+      report.innerHTML = safeHTML`<span class="status-ok">Entrada:</span> ${iqState.file.name} · formato ${stats.format}${stats.taxa!==null?' · '+stats.taxa+' táxon(ns)':''}${stats.nchar!==null?' · '+stats.nchar+' sítios':''}.${sanitizeScriptFilename(iqState.file.name) !== iqState.file.name ? ' Renomeie o arquivo no disco para o nome seguro mostrado no comando.' : ''}`; // FIX: S-02 / S-05
     }
     return cfg;
   }
@@ -2807,7 +3006,7 @@ begin data;
     }catch(err){
       const r=document.getElementById('iqReport');
       r.classList.add('show');
-      r.innerHTML = `<span class="status-warn">Erro:</span> ${escapeHtml(err.message || String(err))}`;
+      r.innerHTML = safeHTML`<span class="status-warn">Erro:</span> ${err.message || String(err)}`; // FIX: S-02
     }
   });
 
@@ -2842,7 +3041,7 @@ begin data;
     if(!iqState.file) return;
     const ok=await copyText(updateIqCommand().command);
     const btn=document.getElementById('btnIqCopy');
-    btn.textContent=ok?'Comando copiado':'Não foi possível copiar';
+    btn.textContent=ok?'Comando copiado':'Selecione e copie manualmente (Ctrl+C)';
     setTimeout(()=>btn.textContent='Copiar comando',1400);
   });
 
@@ -2886,7 +3085,9 @@ begin data;
       if(trees.length) return trees;
     }
     // Otherwise treat the entire input as one or more Newick trees.
-    return clean.split(/(?<=;)\s*/).map(s=>s.trim()).filter(Boolean).map(tree=>({tree,translate}));
+    // FIX: F-01 — split compatível sem lookbehind; restaura o ponto e vírgula final
+    const parts = clean.split(';').map(s => s.trim()).filter(Boolean).map(s => s + ';');
+    return parts.map(tree => ({ tree, translate }));
   }
 
   function applyTranslate(tree, translate){
@@ -2896,18 +3097,27 @@ begin data;
   }
 
   function validateNewick(tree){
-    let depth=0, quoted=false, errors=[];
-    for(let i=0;i<tree.length;i++){
-      const ch=tree[i];
-      if(ch==="'" || ch==='"') quoted=!quoted;
-      if(quoted) continue;
-      if(ch==='(') depth++;
-      else if(ch===')'){
-        depth--;
-        if(depth<0) errors.push('parênteses fechando antes de abrir');
+    // FIX: P-04 — suporta aspas simples/duplas e aspas duplicadas dentro de nomes
+    let depth = 0, quoteChar = '', errors = [];
+    for (let i = 0; i < tree.length; i++){
+      const ch = tree[i];
+      if (quoteChar === ''){
+        if (ch === "'" || ch === '"'){ quoteChar = ch; continue; }
+        if (ch === '(') depth++;
+        else if (ch === ')'){
+          depth--;
+          if (depth < 0) errors.push('parênteses fechando antes de abrir');
+        }
+      } else {
+        if (ch === quoteChar){
+          // Aspas duplicadas ('') ou ("") são escape, não fechamento
+          if (tree[i+1] === quoteChar){ i++; continue; }
+          quoteChar = '';
+        }
       }
     }
     if(depth!==0) errors.push('parênteses desbalanceados');
+    if(quoteChar !== '') errors.push('aspas não fechadas');
     if(!tree.trim().endsWith(';')) errors.push('a árvore não termina em ponto e vírgula');
     return errors;
   }
@@ -2950,9 +3160,9 @@ begin data;
     document.getElementById('btnNewickCopy').disabled=!outputs.length;
     report.classList.add('show');
     if(warnings.length){
-      report.innerHTML=`<span class="status-warn">A conversão terminou com avisos:</span><br>${warnings.map(escapeHtml).join('<br>')}`;
+      report.innerHTML = safeHTML`<span class="status-warn">A conversão terminou com avisos:</span><br>${warnings.join('\n')}`.replace(/\n/g, '<br>'); // FIX: S-02
     }else{
-      report.innerHTML=`<span class="status-ok">Conversão concluída:</span> ${outputs.length} árvore(s) em Newick padrão.`;
+      report.innerHTML = safeHTML`<span class="status-ok">Conversão concluída:</span> ${outputs.length} árvore(s) em Newick padrão.`; // FIX: S-02
     }
   }
 
@@ -2966,7 +3176,7 @@ begin data;
     }catch(err){
       const r=document.getElementById('newickReport');
       r.classList.add('show');
-      r.innerHTML = `<span class="status-warn">Erro:</span> ${escapeHtml(err.message || String(err))}`;
+      r.innerHTML = safeHTML`<span class="status-warn">Erro:</span> ${err.message || String(err)}`; // FIX: S-02
     }
   });
   document.getElementById('newickPaste').addEventListener('input', () => {
@@ -2982,7 +3192,7 @@ begin data;
     if(!newickState.output) return;
     const ok=await copyText(newickState.output);
     const btn=document.getElementById('btnNewickCopy');
-    btn.textContent=ok?'Newick copiado':'Não foi possível copiar';
+    btn.textContent=ok?'Newick copiado':'Selecione e copie manualmente (Ctrl+C)';
     setTimeout(()=>btn.textContent='Copiar Newick',1400);
   });
 
